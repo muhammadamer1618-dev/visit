@@ -207,20 +207,19 @@
     if(!u||!p){msg.textContent="أكمل البيانات";return;}
 
     if(role==="admin" && u==="admin" && p==="admin123"){
-      window.location.href="admin-dashboard.html";
-      return;
-    }
+  window.location.href="./admin-dashboard.html";
+  return;
+}
 
-    if(role==="general" && u==="general" && p==="9665"){
-      window.location.href="general-supervisor.html";
-      return;
-    }
+if(role==="general" && u==="general" && p==="9665"){
+  window.location.href="./general-supervisor.html";
+  return;
+}
 
-    if(role==="supervisor"){
-      window.location.href="supervisor-dashboard.html";
-      return;
-    }
-
+if(role==="supervisor"){
+  window.location.href="./supervisor-dashboard.html";
+  return;
+}
     msg.textContent="بيانات الدخول غير صحيحة";
   }
 </script>
