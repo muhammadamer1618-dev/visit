@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>نظام تبادل الزيارات - مدارس الفلاح الأهلية</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+  box-sizing:border-box;
+  font-family:'Cairo', sans-serif;
+}
+
+body{
+  margin:0;
+  background:linear-gradient(135deg,#0d47a1,#1976d2);
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+}
+
+.container{
+  background:#ffffff;
+  color:#333;
+  width:90%;
+  max-width:500px;
+  border-radius:16px;
+  padding:40px 30px;
+  text-align:center;
+  box-shadow:0 15px 40px rgba(0,0,0,0.25);
+}
+
+.school-name{
+  font-size:22px;
+  font-weight:700;
+  margin-bottom:10px;
+  color:#0d47a1;
+}
+
+.system-name{
+  font-size:20px;
+  font-weight:600;
+  margin-bottom:30px;
+}
+
+.buttons{
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+  margin-bottom:30px;
+}
+
+button{
+  padding:14px;
+  font-size:16px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.teacher-btn{
+  background:#1976d2;
+  color:#fff;
+}
+
+.teacher-btn:hover{
+  background:#0d47a1;
+}
+
+.supervisor-btn{
+  background:#e53935;
+  color:#fff;
+}
+
+.supervisor-btn:hover{
+  background:#b71c1c;
+}
+
+.footer{
+  font-size:14px;
+  color:#666;
+  margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="school-name">مدارس الفلاح الأهلية</div>
+  <div class="system-name">نظام تبادل الزيارات</div>
+
+  <div class="buttons">
+    <button class="teacher-btn" onclick="goTeacher()">دخول المعلم</button>
+    <button class="supervisor-btn" onclick="goSupervisor()">دخول المشرف</button>
+  </div>
+
+  <div class="footer">
+    تصميم محمد عامر أحمد
+  </div>
+</div>
+
+<script>
+function goTeacher(){
+  window.location.href = "teacher-form.html";
+}
+
+function goSupervisor(){
+  const password = prompt("أدخل كلمة المرور:");
+  if(password === "1234"){
+    window.location.href = "supervisor-dashboard.html";
+  }else{
+    alert("كلمة المرور غير صحيحة");
+  }
+}
+</script>
+
+</body>
+</html>
