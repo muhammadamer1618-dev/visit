@@ -9,28 +9,18 @@
 
 <style>
 *{box-sizing:border-box;font-family:'Cairo',sans-serif}
-body{margin:0;min-height:100vh;background:linear-gradient(135deg,#0d47a1,#1976d2)}
-.wrap{max-width:1100px;margin:0 auto;padding:18px}
-.top{background:#fff;border-radius:16px;padding:16px;text-align:center;box-shadow:0 15px 40px rgba(0,0,0,.18)}
-.school{font-size:20px;font-weight:700;color:#0d47a1;margin:0}
-.title{font-size:18px;margin-top:6px;color:#333}
-
-.card{margin-top:14px;background:#fff;border-radius:16px;padding:14px;box-shadow:0 15px 40px rgba(0,0,0,.18)}
-
-.row{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end}
-label{font-size:14px}
-input{padding:12px;border-radius:10px;border:1px solid #ccc;font-size:15px}
-
-.btn{border:0;border-radius:12px;padding:12px 16px;font-size:15px;cursor:pointer}
-.btn-primary{background:#1976d2;color:#fff}
-.btn-primary:hover{background:#0d47a1}
-
-table{width:100%;border-collapse:collapse;margin-top:14px}
-th,td{border:1px solid #ccc;padding:8px;text-align:center;font-size:14px}
-th{background:#f4f4f4}
-
-.msg{text-align:center;margin-top:10px;color:#b71c1c}
-.footer{text-align:center;margin-top:16px;color:#e8e8e8}
+body{margin:0;background:#f4f6f8}
+.wrap{max-width:1200px;margin:20px auto;padding:10px}
+.top{background:#fff;border-radius:14px;padding:16px;text-align:center}
+h2{margin:0;color:#0d47a1}
+.card{margin-top:14px;background:#fff;border-radius:14px;padding:14px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border:1px solid #ddd;font-size:14px;text-align:center}
+th{background:#1976d2;color:#fff}
+button{border:0;border-radius:8px;padding:6px 10px;cursor:pointer}
+.view{background:#1976d2;color:#fff}
+.print{background:#2e7d32;color:#fff}
+.msg{margin-top:10px;color:#b71c1c}
 </style>
 </head>
 
@@ -38,40 +28,30 @@ th{background:#f4f4f4}
 <div class="wrap">
 
   <div class="top">
-    <p class="school">مدارس الفلاح الأهلية</p>
-    <p class="title">أرشيف الزيارات – المشرف العام</p>
-    <a href="index.html" style="color:#1976d2;font-weight:700;text-decoration:none">الصفحة الرئيسية</a>
+    <h2>أرشيف الزيارات – المشرف العام</h2>
+    <input type="date" id="date">
+    <button onclick="load()">عرض الزيارات</button>
   </div>
 
   <div class="card">
-    <div class="row">
-      <div>
-        <label>تاريخ الزيارات</label>
-        <input type="date" id="visitDate">
-      </div>
-      <div></div>
-      <button class="btn btn-primary" id="loadBtn">عرض الزيارات</button>
-    </div>
-
-    <table id="table" style="display:none">
+    <table>
       <thead>
         <tr>
-          <th>اليوم</th>
           <th>التاريخ</th>
+          <th>اليوم</th>
           <th>المعلم الزائر</th>
           <th>المعلم المُزار</th>
           <th>الفصل</th>
           <th>الحصة</th>
-          <th>الإجراء</th>
+          <th>عرض</th>
+          <th>طباعة</th>
         </tr>
       </thead>
-      <tbody></tbody>
+      <tbody id="rows"></tbody>
     </table>
-
     <div class="msg" id="msg"></div>
   </div>
 
-  <div class="footer">تصميم محمد عامر أحمد</div>
 </div>
 
 <script type="module">
@@ -79,8 +59,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebas
 import { getFirestore, collection, getDocs, query, where } 
 from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-/* auth check */
-if(sessionStorage.getItem("role")!=="supervisor"){
+if(sessionStorage.getItem("role")!=="archive"){
   location.href="index.html";
 }
 
@@ -89,61 +68,40 @@ const app = initializeApp({
   authDomain: "visit-2026.firebaseapp.com",
   projectId: "visit-2026"
 });
+
 const db = getFirestore(app);
 
-const visitDate=document.getElementById("visitDate");
-const table=document.getElementById("table");
-const tbody=table.querySelector("tbody");
+const rows=document.getElementById("rows");
 const msg=document.getElementById("msg");
 
-function getDayName(dateStr){
-  const d=new Date(dateStr);
-  return ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"][d.getDay()];
-}
-
-document.getElementById("loadBtn").onclick=async()=>{
+window.load = async ()=>{
+  rows.innerHTML="";
   msg.textContent="";
-  tbody.innerHTML="";
-  table.style.display="none";
+  const d=document.getElementById("date").value;
+  if(!d){ msg.textContent="اختر تاريخ"; return; }
 
-  if(!visitDate.value){
-    msg.textContent="اختر التاريخ أولًا";
-    return;
-  }
-
-  const q=query(
-    collection(db,"visits"),
-    where("visitDate","==",visitDate.value)
-  );
-
+  const q=query(collection(db,"visits"),where("visitDate","==",d));
   const res=await getDocs(q);
 
-  if(res.empty){
-    msg.textContent="لا توجد زيارات في هذا التاريخ";
-    return;
-  }
+  if(res.empty){ msg.textContent="لا توجد زيارات"; return; }
 
-  res.forEach(d=>{
-    const v=d.data();
+  res.forEach(doc=>{
+    const v=doc.data();
     const tr=document.createElement("tr");
     tr.innerHTML=`
-      <td>${getDayName(v.visitDate)}</td>
       <td>${v.visitDate}</td>
-      <td>${v.visitorTeacherName||""}</td>
-      <td>${v.visitedTeacherName||""}</td>
-      <td>${v.classText||""}</td>
-      <td>${v.periodText||""}</td>
-      <td>
-        <button class="btn btn-primary" onclick="location.href='visit-view.html?id=${d.id}'">
-          عرض
-        </button>
-      </td>
+      <td>${v.visitDay}</td>
+      <td>${v.visitorTeacherName}</td>
+      <td>${v.visitedTeacherName}</td>
+      <td>${v.classText}</td>
+      <td>${v.periodText}</td>
+      <td><button class="view" onclick="location.href='visit-view.html?id=${doc.id}'">عرض</button></td>
+      <td><button class="print" onclick="window.open('visit-view.html?id=${doc.id}&print=1')">طباعة</button></td>
     `;
-    tbody.appendChild(tr);
+    rows.appendChild(tr);
   });
-
-  table.style.display="table";
-};
+}
 </script>
+
 </body>
 </html>
