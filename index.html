@@ -4,28 +4,75 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>نظام تبادل الزيارات - مدارس الفلاح الأهلية</title>
+
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+
   <style>
     *{box-sizing:border-box;font-family:'Cairo',sans-serif}
-    body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0d47a1,#1976d2)}
-    .container{width:92%;max-width:560px;background:#fff;border-radius:18px;padding:34px 26px;text-align:center;box-shadow:0 15px 40px rgba(0,0,0,.25)}
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg,#0d47a1,#1976d2)
+    }
+    .container{
+      width:92%;
+      max-width:560px;
+      background:#fff;
+      border-radius:18px;
+      padding:34px 26px;
+      text-align:center;
+      box-shadow:0 15px 40px rgba(0,0,0,.25)
+    }
     .school{font-size:22px;font-weight:700;color:#0d47a1;margin-bottom:6px}
     .system{font-size:20px;font-weight:600;color:#333;margin-bottom:22px}
     .btns{display:flex;flex-direction:column;gap:12px;margin:18px 0 10px}
-    button{border:0;border-radius:12px;padding:14px 16px;font-size:16px;cursor:pointer;transition:.25s}
-    .b-teacher{background:#1976d2;color:#fff}
-    .b-teacher:hover{background:#0d47a1}
+    button{
+      border:0;
+      border-radius:12px;
+      padding:14px 16px;
+      font-size:16px;
+      cursor:pointer;
+      transition:.25s
+    }
     .b-super{background:#e53935;color:#fff}
     .b-super:hover{background:#b71c1c}
     .b-admin{background:#2e7d32;color:#fff}
     .b-admin:hover{background:#1b5e20}
+    .b-general{background:#1976d2;color:#fff}
+    .b-general:hover{background:#0d47a1}
     .footer{margin-top:14px;font-size:14px;color:#666}
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:16px}
-    .card{width:100%;max-width:520px;background:#fff;border-radius:16px;padding:18px 16px;box-shadow:0 15px 40px rgba(0,0,0,.25);text-align:right}
+
+    .modal{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.45);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:16px
+    }
+    .card{
+      width:100%;
+      max-width:520px;
+      background:#fff;
+      border-radius:16px;
+      padding:18px 16px;
+      box-shadow:0 15px 40px rgba(0,0,0,.25);
+      text-align:right
+    }
     .card h3{margin:0 0 10px;font-size:18px;color:#0d47a1}
     .row{display:flex;flex-direction:column;gap:8px;margin:10px 0}
     label{font-size:14px;color:#333}
-    input{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:15px}
+    input{
+      width:100%;
+      padding:12px;
+      border:1px solid #ddd;
+      border-radius:10px;
+      font-size:15px
+    }
     .actions{display:flex;gap:10px;margin-top:12px}
     .actions button{flex:1}
     .b-cancel{background:#eee;color:#333}
@@ -37,174 +84,149 @@
 </head>
 <body>
 
-  <div class="container">
-    <div class="school">مدارس الفلاح الأهلية</div>
-    <div class="system">نظام تبادل الزيارات</div>
+<div class="container">
+  <div class="school">مدارس الفلاح الأهلية</div>
+  <div class="system">نظام تبادل الزيارات</div>
 
-    <div class="btns">
-      
-      <button class="b-super" onclick="openSupervisor()">دخول المشرف</button>
-      <button class="b-admin" onclick="openAdmin()">دخول الأدمن</button>
-    </div>
-
-    <div class="footer">تصميم محمد عامر أحمد</div>
+  <div class="btns">
+    <button class="b-super" onclick="openSupervisor()">دخول المشرف</button>
+    <button class="b-general" onclick="openGeneral()">دخول المشرف العام</button>
+    <button class="b-admin" onclick="openAdmin()">دخول الأدمن</button>
   </div>
 
-  <div class="modal" id="modal">
-    <div class="card">
-      <h3 id="modalTitle">تسجيل الدخول</h3>
+  <div class="footer">تصميم محمد عامر أحمد</div>
+</div>
 
-      <div class="row" id="rowUser">
-        <label>اسم المستخدم</label>
-        <input id="username" autocomplete="username" />
-      </div>
+<div class="modal" id="modal">
+  <div class="card">
+    <h3 id="modalTitle">تسجيل الدخول</h3>
 
-      <div class="row">
-        <label>كلمة المرور</label>
-        <input id="password" type="password" autocomplete="current-password" />
-      </div>
-
-      <div class="actions">
-        <button class="b-cancel" onclick="closeModal()">إلغاء</button>
-        <button class="b-submit" id="btnLogin">دخول</button>
-      </div>
-
-      <div class="hint" id="hint"></div>
-      <div class="msg" id="msg"></div>
+    <div class="row">
+      <label>اسم المستخدم</label>
+      <input id="username">
     </div>
+
+    <div class="row">
+      <label>كلمة المرور</label>
+      <input id="password" type="password">
+    </div>
+
+    <div class="actions">
+      <button class="b-cancel" onclick="closeModal()">إلغاء</button>
+      <button class="b-submit" id="btnLogin">دخول</button>
+    </div>
+
+    <div class="hint" id="hint"></div>
+    <div class="msg" id="msg"></div>
   </div>
+</div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-    import {
-      getFirestore, doc, getDoc, setDoc,
-      collection, getDocs, query, where, limit
-    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import {
+  getFirestore, doc, getDoc, setDoc,
+  collection, getDocs, query, where, limit
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
-      authDomain: "visit-2026.firebaseapp.com",
-      projectId: "visit-2026",
-      storageBucket: "visit-2026.firebasestorage.app",
-      messagingSenderId: "355064530699",
-      appId: "1:355064530699:web:26ad1710ff493c76ce840e"
-    };
+const app = initializeApp({
+  apiKey: "AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
+  authDomain: "visit-2026.firebaseapp.com",
+  projectId: "visit-2026"
+});
+const db = getFirestore(app);
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+const modal = document.getElementById("modal");
+const modalTitle = document.getElementById("modalTitle");
+const usernameEl = document.getElementById("username");
+const passwordEl = document.getElementById("password");
+const msg = document.getElementById("msg");
+const hint = document.getElementById("hint");
+const btnLogin = document.getElementById("btnLogin");
 
-    window.goTeacher = () => {
-      window.location.href = "teacher-form.html";
-    };
+window.closeModal = ()=> modal.style.display="none";
 
-    const modal = document.getElementById("modal");
-    const modalTitle = document.getElementById("modalTitle");
-    const rowUser = document.getElementById("rowUser");
-    const hint = document.getElementById("hint");
-    const msg = document.getElementById("msg");
-    const usernameEl = document.getElementById("username");
-    const passwordEl = document.getElementById("password");
-    const btnLogin = document.getElementById("btnLogin");
+window.openSupervisor = ()=>{
+  modalTitle.textContent="دخول المشرف";
+  hint.textContent="";
+  msg.textContent="";
+  usernameEl.value="";
+  passwordEl.value="";
+  modal.style.display="flex";
+  btnLogin.onclick=loginSupervisor;
+};
 
-    let mode = null;
+window.openAdmin = async ()=>{
+  modalTitle.textContent="دخول الأدمن";
+  hint.textContent="اسم المستخدم ثابت: admin";
+  msg.textContent="";
+  usernameEl.value="admin";
+  passwordEl.value="";
+  modal.style.display="flex";
+  btnLogin.onclick=loginAdmin;
 
-    window.openSupervisor = () => {
-      mode = "supervisor";
-      modalTitle.textContent = "دخول المشرف";
-      rowUser.style.display = "block";
-      hint.textContent = "";
-      msg.textContent = "";
-      usernameEl.value = "";
-      passwordEl.value = "";
-      modal.style.display = "flex";
-      btnLogin.onclick = loginSupervisor;
-    };
+  const ref=doc(db,"admins","main");
+  if(!(await getDoc(ref)).exists()){
+    await setDoc(ref,{username:"admin",password:"admin123"});
+  }
+};
 
-    window.openAdmin = async () => {
-      mode = "admin";
-      modalTitle.textContent = "دخول الأدمن";
-      rowUser.style.display = "block";
-      hint.textContent = "اسم المستخدم ثابت: admin";
-      msg.textContent = "";
-      usernameEl.value = "admin";
-      passwordEl.value = "";
-      modal.style.display = "flex";
-      btnLogin.onclick = loginAdmin;
-      await ensureAdminSeed();
-    };
+window.openGeneral = async ()=>{
+  modalTitle.textContent="دخول المشرف العام";
+  hint.textContent="";
+  msg.textContent="";
+  usernameEl.value="";
+  passwordEl.value="";
+  modal.style.display="flex";
+  btnLogin.onclick=loginGeneral;
 
-    window.closeModal = () => {
-      modal.style.display = "none";
-    };
+  const ref=doc(db,"general_supervisors","main");
+  if(!(await getDoc(ref)).exists()){
+    await setDoc(ref,{username:"general",password:"9665"});
+  }
+};
 
-    async function ensureAdminSeed(){
-      const ref = doc(db, "admins", "main");
-      const snap = await getDoc(ref);
-      if(!snap.exists()){
-        await setDoc(ref, { username: "admin", password: "admin123" });
-      }
-    }
+async function loginAdmin(){
+  const u=usernameEl.value.trim();
+  const p=passwordEl.value.trim();
+  const snap=await getDoc(doc(db,"admins","main"));
+  if(!snap.exists()||snap.data().password!==p){
+    msg.textContent="بيانات الدخول غير صحيحة";return;
+  }
+  sessionStorage.setItem("role","admin");
+  closeModal();
+  location.href="admin-dashboard.html";
+}
 
-    async function loginAdmin(){
-      try{
-        msg.textContent = "";
-        const u = (usernameEl.value || "").trim();
-        const p = (passwordEl.value || "").trim();
-        if(u !== "admin") { msg.textContent = "اسم المستخدم غير صحيح"; return; }
-        if(!p) { msg.textContent = "اكتب كلمة المرور"; return; }
+async function loginSupervisor(){
+  const u=usernameEl.value.trim();
+  const p=passwordEl.value.trim();
+  const q=query(collection(db,"supervisors"),
+    where("username","==",u),
+    where("active","==",true),
+    limit(1)
+  );
+  const r=await getDocs(q);
+  if(r.empty||r.docs[0].data().password!==p){
+    msg.textContent="بيانات الدخول غير صحيحة";return;
+  }
+  sessionStorage.setItem("role","supervisor");
+  sessionStorage.setItem("supervisorId",r.docs[0].id);
+  closeModal();
+  location.href="supervisor-dashboard.html";
+}
 
-        const ref = doc(db, "admins", "main");
-        const snap = await getDoc(ref);
-        if(!snap.exists()) { msg.textContent = "لم يتم تهيئة الأدمن"; return; }
+async function loginGeneral(){
+  const u=usernameEl.value.trim();
+  const p=passwordEl.value.trim();
+  const snap=await getDoc(doc(db,"general_supervisors","main"));
+  if(!snap.exists()||snap.data().password!==p){
+    msg.textContent="بيانات الدخول غير صحيحة";return;
+  }
+  sessionStorage.setItem("role","general_supervisor");
+  closeModal();
+  location.href="general-supervisor.html";
+}
+</script>
 
-        const data = snap.data();
-        if(data.password !== p){ msg.textContent = "كلمة المرور غير صحيحة"; return; }
-
-        sessionStorage.setItem("role", "admin");
-        sessionStorage.setItem("adminDocId", "main");
-        closeModal();
-        window.location.href = "admin-dashboard.html";
-      }catch(e){
-        msg.textContent = "حدث خطأ";
-      }
-    }
-
-    async function loginSupervisor(){
-      try{
-        msg.textContent = "";
-        const u = (usernameEl.value || "").trim();
-        const p = (passwordEl.value || "").trim();
-        if(!u) { msg.textContent = "اكتب اسم المستخدم"; return; }
-        if(!p) { msg.textContent = "اكتب كلمة المرور"; return; }
-
-        const q = query(
-          collection(db, "supervisors"),
-          where("username", "==", u),
-          where("active", "==", true),
-          limit(1)
-        );
-        const res = await getDocs(q);
-        if(res.empty){ msg.textContent = "بيانات الدخول غير صحيحة"; return; }
-
-        const docSnap = res.docs[0];
-        const data = docSnap.data();
-        if(data.password !== p){ msg.textContent = "بيانات الدخول غير صحيحة"; return; }
-
-        sessionStorage.setItem("role", "supervisor");
-        sessionStorage.setItem("supervisorId", docSnap.id);
-        sessionStorage.setItem("supervisorName", data.name || "");
-
-        closeModal();
-
-        if(data.tempPassword === true){
-          window.location.href = "change-password.html?role=supervisor";
-          return;
-        }
-        window.location.href = "supervisor-dashboard.html";
-      }catch(e){
-        msg.textContent = "حدث خطأ";
-      }
-    }
-  </script>
 </body>
 </html>
