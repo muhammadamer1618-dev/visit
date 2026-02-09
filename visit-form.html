@@ -1,112 +1,116 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>نموذج الزيارة</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    *{box-sizing:border-box;font-family:'Cairo',sans-serif}
-    body{margin:0;min-height:100vh;background:linear-gradient(135deg,#0d47a1,#1976d2)}
-    .wrap{max-width:900px;margin:0 auto;padding:18px 14px 40px}
-    .top,.card{background:#fff;border-radius:16px;padding:14px 12px;box-shadow:0 15px 40px rgba(0,0,0,.18)}
-    .top{text-align:center}
-    .school{font-size:20px;font-weight:700;color:#0d47a1;margin:0}
-    .title{font-size:18px;font-weight:600;margin:6px 0 0;color:#333}
-    .card{margin-top:14px}
-    .hint{color:#666;font-size:14px;line-height:1.8}
-    label{display:block;margin:10px 0 6px;font-size:13px;color:#333}
-    textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:14px;min-height:110px;resize:vertical}
-    .btnRow{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
-    button{border:0;border-radius:12px;padding:12px 14px;font-size:15px;cursor:pointer;transition:.2s}
-    .b1{background:#1976d2;color:#fff}
-    .b1:hover{background:#0d47a1}
-    .b2{background:#eee;color:#333}
-    .msg{margin-top:10px;min-height:18px;font-size:14px;color:#b71c1c}
-    .footer{margin-top:16px;text-align:center;font-size:14px;color:#e8e8e8}
-    @media print{.footer{color:#333}}
-  </style>
+<meta charset="UTF-8">
+<title>نموذج الزيارة الصفّية</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;font-family:'Cairo',sans-serif}
+body{margin:0;background:linear-gradient(135deg,#0d47a1,#1976d2)}
+.wrap{max-width:1100px;margin:0 auto;padding:18px}
+.card{background:#fff;border-radius:16px;padding:16px;box-shadow:0 15px 40px rgba(0,0,0,.18)}
+h2{text-align:center;margin-top:0;color:#0d47a1}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #ccc;padding:8px;text-align:center;font-size:14px}
+th{background:#f4f4f4}
+label{font-size:14px;font-weight:700}
+textarea{width:100%;min-height:80px;padding:10px;border-radius:10px;border:1px solid #ccc}
+.btn{margin-top:14px;background:#1976d2;color:#fff;border:0;padding:12px 18px;border-radius:12px;font-size:15px;cursor:pointer}
+.footer{text-align:center;margin-top:14px;color:#666}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="top">
-      <p class="school">مدارس الفلاح الأهلية</p>
-      <p class="title">نموذج الزيارة</p>
-    </div>
 
-    <div class="card">
-      <div class="hint">
-        هذه صفحة مؤقتة لحين إضافة النموذج الورقي المعتمد.<br/>
-        حاليًا يمكنك كتابة ملاحظات عامة ثم حفظها.
-      </div>
+<div class="wrap">
+  <div class="card">
+    <h2>استمارة تبادل زيارة صفّية</h2>
 
-      <label>ملاحظات عامة</label>
-      <textarea id="notes"></textarea>
+    <table id="evalTable">
+      <thead>
+        <tr>
+          <th>م</th>
+          <th>المجال</th>
+          <th>ممتاز</th>
+          <th>جيد</th>
+          <th>متوسط</th>
+          <th>إلى حد ما</th>
+          <th>لم ينفذ</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
-      <div class="btnRow">
-        <button class="b2" onclick="location.href='teacher-form.html'">رجوع</button>
-        <button class="b1" id="saveBtn">حفظ وإرسال</button>
-      </div>
+    <br>
+    <label>الملاحظات الإيجابية للمعلم الزائر</label>
+    <textarea id="positiveNotes"></textarea>
 
-      <div class="msg" id="msg"></div>
-    </div>
+    <br><br>
+    <label>التوصيات التي يوصي بها المعلم الزائر</label>
+    <textarea id="recommendations"></textarea>
 
-    <div class="footer">تصميم محمد عامر أحمد</div>
+    <button class="btn" id="submitForm">حفظ النموذج</button>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+  <div class="footer">تصميم محمد عامر أحمد</div>
+</div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
-      authDomain: "visit-2026.firebaseapp.com",
-      projectId: "visit-2026",
-      storageBucket: "visit-2026.firebasestorage.app",
-      messagingSenderId: "355064530699",
-      appId: "1:355064530699:web:26ad1710ff493c76ce840e"
-    };
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getFirestore, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+const firebaseConfig = {
+  apiKey: "AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
+  authDomain: "visit-2026.firebaseapp.com",
+  projectId: "visit-2026"
+};
 
-    const visitId = sessionStorage.getItem("currentVisitId");
-    const msg = document.getElementById("msg");
-    const notes = document.getElementById("notes");
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-    async function load(){
-      if(!visitId){ location.href="teacher-form.html"; return; }
-      const ref = doc(db,"visits",visitId);
-      const snap = await getDoc(ref);
-      if(!snap.exists()){ location.href="teacher-form.html"; return; }
-      const data = snap.data();
-      notes.value = (data.formAnswers && data.formAnswers.notes) ? data.formAnswers.notes : "";
-    }
+const questions = [
+"وضوح أهداف الدرس","تسلسل خطوات الدرس","وضوح مخارج الصوت","مناسبة طريقة التدريس",
+"جودة الأسئلة التي تُلقى على الطلاب","مهارة توزيع الأسئلة على الطلاب",
+"تقبل المعلم لآراء ومشاركات الطلاب","جذب انتباه الطلاب",
+"استخدام عبارات التشجيع والتعزيز للطلاب","تمكن المعلم من المادة العلمية",
+"استثمار وقت الحصة","شخصية المعلم","مظهر المعلم","ضبط الطلاب",
+"استخدام السبورة وتنظيمها","استخدام الوسائل المناسبة للدرس",
+"تقويم الدرس في نهاية الحصة","رصد وتسجيل مشاركات وإجابات الطلاب"
+];
 
-    document.getElementById("saveBtn").onclick = async () => {
-      try{
-        msg.textContent = "";
-        const ok = confirm("هل أنت متأكد من حفظ وإرسال الزيارة؟");
-        if(!ok) return;
+const tbody = document.querySelector("#evalTable tbody");
 
-        const ref = doc(db,"visits",visitId);
-        await updateDoc(ref, {
-          formAnswers: { notes: (notes.value||"").trim() },
-          status: "submitted",
-          submittedAt: Date.now()
-        });
+questions.forEach((q,i)=>{
+  const tr=document.createElement("tr");
+  tr.innerHTML=`
+    <td>${i+1}</td>
+    <td style="text-align:right">${q}</td>
+    ${["ممتاز","جيد","متوسط","إلى حد ما","لم ينفذ"].map(v=>`
+      <td><input type="radio" name="q${i}" value="${v}"></td>
+    `).join("")}
+  `;
+  tbody.appendChild(tr);
+});
 
-        sessionStorage.removeItem("currentVisitId");
-        msg.style.color = "#1b5e20";
-        msg.textContent = "تم الحفظ والإرسال";
-        setTimeout(()=>location.href="index.html", 700);
-      }catch(e){
-        msg.style.color = "#b71c1c";
-        msg.textContent = "حدث خطأ";
-      }
-    };
+document.getElementById("submitForm").onclick = async ()=>{
+  const visitId = sessionStorage.getItem("currentVisitId");
+  const answers = {};
+  for(let i=0;i<questions.length;i++){
+    const sel=document.querySelector(`input[name="q${i}"]:checked`);
+    if(!sel){ alert("يرجى استكمال جميع البنود"); return; }
+    answers["q"+(i+1)] = sel.value;
+  }
 
-    await load();
-  </script>
+  await updateDoc(doc(db,"visits",visitId),{
+    formAnswers: answers,
+    positiveNotes: positiveNotes.value,
+    recommendations: recommendations.value,
+    status: "submitted"
+  });
+
+  alert("تم حفظ النموذج بنجاح");
+  location.href="index.html";
+};
+</script>
+
 </body>
 </html>
