@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>عرض الزيارة الصفّية</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box;font-family:'Cairo',sans-serif}
+body{margin:0;background:#f4f6f8}
+.wrap{max-width:1000px;margin:0 auto;padding:20px}
+.header{text-align:center;margin-bottom:14px}
+.school{font-size:20px;font-weight:700}
+.title{font-size:18px;margin-top:6px}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.box{border:1px solid #ccc;padding:8px;font-size:14px;background:#fff}
+table{width:100%;border-collapse:collapse;margin-top:14px;background:#fff}
+th,td{border:1px solid #ccc;padding:8px;text-align:center;font-size:13px}
+th{background:#f0f0f0}
+.left{text-align:right}
+.section{margin-top:14px}
+.footer{margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:40px;text-align:center}
+.actions{margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+button{border:0;border-radius:10px;padding:12px 16px;font-size:15px;cursor:pointer}
+.btn-back{background:#777;color:#fff}
+.btn-print{background:#1976d2;color:#fff}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="school">مدارس الفلاح الأهلية</div>
+    <div class="title">عرض زيارة صفّية</div>
+  </div>
+
+  <div class="meta">
+    <div class="box"><b>اليوم:</b> <span id="visitDay"></span></div>
+    <div class="box"><b>التاريخ:</b> <span id="visitDate"></span></div>
+    <div class="box"><b>المعلم الزائر:</b> <span id="visitorTeacher"></span></div>
+    <div class="box"><b>المعلم المُزار:</b> <span id="visitedTeacher"></span></div>
+    <div class="box"><b>الفصل:</b> <span id="classText"></span></div>
+    <div class="box"><b>الحصة:</b> <span id="periodText"></span></div>
+    <div class="box"><b>المادة:</b> <span id="subjectText"></span></div>
+    <div class="box"><b>عنوان الدرس:</b> <span id="lessonTitle"></span></div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>م</th>
+        <th class="left">المجال</th>
+        <th>ممتاز</th>
+        <th>جيد</th>
+        <th>متوسط</th>
+        <th>إلى حد ما</th>
+        <th>لم ينفذ</th>
+      </tr>
+    </thead>
+    <tbody id="evalBody"></tbody>
+  </table>
+
+  <div class="section">
+    <b>الملاحظات الإيجابية:</b>
+    <div class="box" id="positiveNotes"></div>
+  </div>
+
+  <div class="section">
+    <b>التوصيات:</b>
+    <div class="box" id="recommendations"></div>
+  </div>
+
+  <div class="footer">
+    <div>توقيع المعلم الزائر<br><br>………………</div>
+    <div>توقيع المشرف<br><br>………………</div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-back" onclick="goBack()">رجوع</button>
+    <button class="btn-print" onclick="goPrint()">🖨️ طباعة</button>
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
+  authDomain: "visit-2026.firebaseapp.com",
+  projectId: "visit-2026"
+});
+const db = getFirestore(app);
+
+const params = new URLSearchParams(window.location.search);
+const visitId = params.get("id");
+if(!visitId){ alert("رقم الزيارة غير موجود"); }
+
+const questions = [
+  "وضوح أهداف الدرس","تسلسل خطوات الدرس","وضوح مخارج الصوت","مناسبة طريقة التدريس",
+  "جودة الأسئلة التي تُلقى على الطلاب","مهارة توزيع الأسئلة على الطلاب",
+  "تقبل المعلم لآراء ومشاركات الطلاب","جذب انتباه الطلاب",
+  "استخدام عبارات التشجيع والتعزيز للطلاب","تمكن المعلم من المادة العلمية",
+  "استثمار وقت الحصة","شخصية المعلم","مظهر المعلم","ضبط الطلاب",
+  "استخدام السبورة وتنظيمها","استخدام الوسائل المناسبة للدرس",
+  "تقويم الدرس في نهاية الحصة","رصد وتسجيل مشاركات وإجابات الطلاب"
+];
+
+const body = document.getElementById("evalBody");
+
+const snap = await getDoc(doc(db,"visits",visitId));
+const v = snap.data();
+
+visitDay.textContent = v.visitDay || "";
+visitDate.textContent = v.visitDate || "";
+visitorTeacher.textContent = v.visitorTeacherName || "";
+visitedTeacher.textContent = v.visitedTeacherName || "";
+classText.textContent = v.classText || "";
+periodText.textContent = v.periodText || "";
+subjectText.textContent = v.subjectText || "";
+lessonTitle.textContent = v.lessonTitle || "";
+positiveNotes.textContent = v.positiveNotes || "";
+recommendations.textContent = v.recommendations || "";
+
+questions.forEach((q,i)=>{
+  const tr=document.createElement("tr");
+  tr.innerHTML=`
+    <td>${i+1}</td>
+    <td class="left">${q}</td>
+    ${["ممتاز","جيد","متوسط","إلى حد ما","لم ينفذ"].map(vl=>`
+      <td>${v.formAnswers?.["q"+(i+1)]===vl?"✔️":""}</td>
+    `).join("")}
+  `;
+  body.appendChild(tr);
+});
+
+window.goBack = () => {
+  window.location.href = "general-supervisor.html";
+};
+
+window.goPrint = () => {
+  window.location.href = "visit-print.html?id=" + visitId;
+};
+</script>
+
+</body>
+</html>
