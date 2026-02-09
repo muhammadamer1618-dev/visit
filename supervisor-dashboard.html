@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>لوحة المشرف - نظام تبادل الزيارات</title>
+<title>لوحة المشرف - تبادل الزيارات</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -14,21 +14,29 @@ body{margin:0;min-height:100vh;background:linear-gradient(135deg,#0d47a1,#1976d2
 .top{background:#fff;border-radius:16px;padding:16px;box-shadow:0 15px 40px rgba(0,0,0,.18);text-align:center}
 .school{font-size:20px;font-weight:700;color:#0d47a1;margin:0}
 .title{font-size:18px;font-weight:600;margin-top:6px;color:#333}
-.card{margin-top:14px;background:#fff;border-radius:16px;padding:14px;box-shadow:0 15px 40px rgba(0,0,0,.18)}
+.card{margin-top:14px;background:#fff;border-radius:16px;padding:16px;box-shadow:0 15px 40px rgba(0,0,0,.18)}
+
+.controls{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}
 label{font-size:14px;color:#333}
 select{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:14px}
-.list{margin-top:14px}
+
+.btn{border:0;border-radius:10px;padding:12px 16px;font-size:14px;cursor:pointer}
+.btn-primary{background:#1976d2;color:#fff}
+.btn-primary:hover{background:#0d47a1}
+.btn-print{background:#1976d2;color:#fff}
+.btn-delete{background:#e53935;color:#fff}
+
+.list{margin-top:16px}
 .item{border:1px solid #eee;border-radius:14px;padding:12px;margin-bottom:12px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .k{font-size:13px;color:#666}
 .v{font-weight:700;color:#111}
 .actions{display:flex;gap:10px;margin-top:10px}
-.btn{border:0;border-radius:10px;padding:10px 14px;font-size:14px;cursor:pointer}
-.btn-print{background:#1976d2;color:#fff}
-.btn-delete{background:#e53935;color:#fff}
-.footer{text-align:center;margin-top:16px;color:#e8e8e8}
+
 .msg{margin-top:10px;color:#b71c1c}
-@media print{.actions,.top,.footer{display:none}}
+.footer{text-align:center;margin-top:16px;color:#e8e8e8}
+
+@media print{.top,.controls,.actions,.footer{display:none}}
 </style>
 </head>
 
@@ -42,11 +50,21 @@ select{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-siz
   </div>
 
   <div class="card">
-    <label>اختر المعلم الزائر</label>
-    <select id="visitorSelect"></select>
+
+    <div class="controls">
+      <div>
+        <label>المعلم الزائر</label>
+        <select id="visitorSelect"></select>
+      </div>
+
+      <button class="btn btn-primary" id="loadBtn">
+        عرض زيارات المعلم
+      </button>
+    </div>
 
     <div class="msg" id="msg"></div>
     <div class="list" id="visitsList"></div>
+
   </div>
 
   <div class="footer">تصميم محمد عامر أحمد</div>
@@ -67,12 +85,13 @@ const db = getFirestore(app);
 const visitorSelect = document.getElementById("visitorSelect");
 const visitsList = document.getElementById("visitsList");
 const msg = document.getElementById("msg");
+const loadBtn = document.getElementById("loadBtn");
 
 /* helpers */
 function addDefault(sel,text){
   sel.innerHTML="";
   const o=document.createElement("option");
-  o.value="";o.textContent=text;
+  o.value=""; o.textContent=text;
   sel.appendChild(o);
 }
 
@@ -87,7 +106,7 @@ function kv(k,v){
 
 /* load teachers */
 async function loadVisitors(){
-  addDefault(visitorSelect,"اختر المعلم الزائر");
+  addDefault(visitorSelect,"اختر المعلم");
   const res = await getDocs(
     query(collection(db,"teachers"), where("active","==",true))
   );
@@ -100,14 +119,19 @@ async function loadVisitors(){
 }
 
 /* load visits */
-async function loadVisits(visitorId){
+async function loadVisits(){
   visitsList.innerHTML="";
   msg.textContent="";
+
+  if(!visitorSelect.value){
+    msg.textContent="اختر المعلم الزائر أولًا";
+    return;
+  }
 
   const res = await getDocs(
     query(
       collection(db,"visits"),
-      where("visitorTeacherId","==",visitorId),
+      where("visitorTeacherId","==",visitorSelect.value),
       orderBy("createdAt","desc")
     )
   );
@@ -119,7 +143,6 @@ async function loadVisits(visitorId){
 
   res.forEach(d=>{
     const v=d.data();
-
     const div=document.createElement("div");
     div.className="item";
 
@@ -138,17 +161,14 @@ async function loadVisits(visitorId){
         <button class="btn btn-print" onclick="window.open('visit-print.html?id=${d.id}','_blank')">
           طباعة
         </button>
-
-        <button class="btn btn-delete" data-id="${d.id}">
-          مسح الزيارة
-        </button>
+        <button class="btn btn-delete">حذف</button>
       </div>
     `;
 
     div.querySelector(".btn-delete").onclick = async ()=>{
       if(!confirm("هل أنت متأكد من حذف هذه الزيارة؟")) return;
       await deleteDoc(doc(db,"visits",d.id));
-      loadVisits(visitorSelect.value);
+      loadVisits();
     };
 
     visitsList.appendChild(div);
@@ -156,13 +176,7 @@ async function loadVisits(visitorId){
 }
 
 /* events */
-visitorSelect.onchange = ()=>{
-  if(visitorSelect.value){
-    loadVisits(visitorSelect.value);
-  }else{
-    visitsList.innerHTML="";
-  }
-};
+loadBtn.onclick = loadVisits;
 
 /* init */
 loadVisitors();
