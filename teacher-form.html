@@ -117,23 +117,29 @@ textarea{min-height:90px}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import { getFirestore, collection, getDocs, query, where, addDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
+/* Firebase */
 const app = initializeApp({
   apiKey: "AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
   authDomain: "visit-2026.firebaseapp.com",
   projectId: "visit-2026"
 });
-
 const db = getFirestore(app);
 
+/* elements */
 const visitorTeacher = document.getElementById("visitorTeacher");
 const visitedTeacher = document.getElementById("visitedTeacher");
 const className = document.getElementById("className");
 const subject = document.getElementById("subject");
 const period = document.getElementById("period");
-const otherWrap = document.getElementById("otherWrap");
+const visitDay = document.getElementById("visitDay");
+const visitDate = document.getElementById("visitDate");
 const subjectOther = document.getElementById("subjectOther");
+const otherWrap = document.getElementById("otherWrap");
+const lessonTitle = document.getElementById("lessonTitle");
+const objective = document.getElementById("objective");
 const msg = document.getElementById("msg");
 
+/* helpers */
 function addDefault(sel,text){
   sel.innerHTML="";
   const o=document.createElement("option");
@@ -144,56 +150,99 @@ function addDefault(sel,text){
 function fillPeriods(){
   addDefault(period,"اختر الحصة");
   ["الأولى","الثانية","الثالثة","الرابعة","الخامسة","السادسة","السابعة","الثامنة"]
-  .forEach((t,i)=>{
-    const o=document.createElement("option");
-    o.value=i+1;o.textContent="الحصة "+t;
-    period.appendChild(o);
-  });
+    .forEach((t,i)=>{
+      const o=document.createElement("option");
+      o.value=i+1;
+      o.textContent="الحصة "+t;
+      period.appendChild(o);
+    });
 }
 
 async function loadSelect(col,sel,placeholder){
   addDefault(sel,placeholder);
-  const res = await getDocs(query(collection(db,col),where("active","==",true)));
+  const res = await getDocs(
+    query(collection(db,col), where("active","==",true))
+  );
   res.forEach(d=>{
     const o=document.createElement("option");
-    o.value=d.id;o.textContent=d.data().name||"";
+    o.value=d.id;
+    o.textContent=d.data().name || "";
     sel.appendChild(o);
   });
 }
 
-subject.onchange=()=>otherWrap.style.display=subject.value==="__other__"?"block":"none";
+/* subject other */
+subject.onchange = ()=>{
+  otherWrap.style.display = subject.value==="__other__" ? "block" : "none";
+};
 
-document.getElementById("startBtn").onclick=async()=>{
+/* start visit */
+document.getElementById("startBtn").onclick = async ()=>{
   msg.textContent="";
-  if(!visitorTeacher.value||!visitedTeacher.value||!period.value||!className.value||!subject.value){
+
+  if(
+    !visitDay.value ||
+    !visitDate.value ||
+    !visitorTeacher.value ||
+    !visitedTeacher.value ||
+    !period.value ||
+    !className.value ||
+    !subject.value ||
+    !lessonTitle.value.trim() ||
+    !objective.value.trim()
+  ){
     msg.textContent="يرجى استكمال جميع الحقول";
     return;
   }
-  await addDoc(collection(db,"visits"),{
-    visitDay:visitDay.value,
-    visitDate:visitDate.value,
-    visitorTeacherId:visitorTeacher.value,
-    visitedTeacherId:visitedTeacher.value,
-    period:period.value,
-    classId:className.value,
-    subjectText:subject.value==="__other__"?subjectOther.value:subject.options[subject.selectedIndex].textContent,
-    lessonTitle:lessonTitle.value,
-    objective:objective.value,
-    createdAt:Date.now(),
-    status:"header_saved"
-  });
-  location.href="visit-form.html";
+
+  try{
+    const ref = await addDoc(collection(db,"visits"),{
+      visitDay: visitDay.value,
+      visitDate: visitDate.value,
+
+      visitorTeacherId: visitorTeacher.value,
+      visitorTeacherName: visitorTeacher.options[visitorTeacher.selectedIndex].textContent,
+
+      visitedTeacherId: visitedTeacher.value,
+      visitedTeacherName: visitedTeacher.options[visitedTeacher.selectedIndex].textContent,
+
+      period: Number(period.value),
+      periodText: period.options[period.selectedIndex].textContent,
+
+      classId: className.value,
+      classText: className.options[className.selectedIndex].textContent,
+
+      subjectText:
+        subject.value==="__other__"
+          ? subjectOther.value.trim()
+          : subject.options[subject.selectedIndex].textContent,
+
+      lessonTitle: lessonTitle.value.trim(),
+      objective: objective.value.trim(),
+
+      status: "draft",
+      createdAt: Date.now()
+    });
+
+    /* 👇 فتح نموذج الزيارة مع ID */
+    window.location.href = "visit-form.html?id=" + ref.id;
+
+  }catch(e){
+    msg.textContent="حدث خطأ أثناء إنشاء الزيارة";
+  }
 };
 
+/* init */
 fillPeriods();
 loadSelect("teachers",visitorTeacher,"اختر المعلم الزائر");
 loadSelect("teachers",visitedTeacher,"اختر المعلم المُزار");
 loadSelect("classes",className,"اختر الفصل");
 loadSelect("subjects",subject,"اختر المادة");
 
-const o=document.createElement("option");
-o.value="__other__";o.textContent="أخرى";
-subject.appendChild(o);
+const otherOpt=document.createElement("option");
+otherOpt.value="__other__";
+otherOpt.textContent="أخرى";
+subject.appendChild(otherOpt);
 </script>
 
 </body>
