@@ -95,7 +95,87 @@ const loginBtn = document.getElementById("loginBtn");
 
 window.closeModal = () => modal.style.display="none";
 
-/* ---------- SUPERVISOR ---------- */
+/* ================= ADMIN ================= */
+window.openAdmin = async () => {
+  title.textContent = "دخول الأدمن";
+  hint.textContent = "اسم المستخدم: admin";
+  msg.textContent = "";
+  userEl.value = "admin";
+  passEl.value = "";
+  modal.style.display = "flex";
+  loginBtn.onclick = loginAdmin;
+  await seedAdmin();
+};
+
+async function seedAdmin(){
+  const ref = doc(db,"admins","main");
+  if(!(await getDoc(ref)).exists()){
+    await setDoc(ref,{username:"admin",password:"admin123"});
+  }
+}
+
+async function loginAdmin(){
+  const u = userEl.value.trim();
+  const p = passEl.value.trim();
+  const ref = doc(db,"admins","main");
+  const snap = await getDoc(ref);
+
+  if(!snap.exists()){
+    msg.textContent="الأدمن غير مهيأ";
+    return;
+  }
+
+  const d = snap.data();
+  if(d.username!==u || d.password!==p){
+    msg.textContent="بيانات الدخول غير صحيحة";
+    return;
+  }
+
+  sessionStorage.setItem("role","admin");
+  window.location.href="admin-dashboard.html";
+}
+
+/* ================= GENERAL ================= */
+window.openGeneral = async () => {
+  title.textContent = "دخول المشرف العام";
+  hint.textContent = "اسم المستخدم: general";
+  msg.textContent = "";
+  userEl.value = "general";
+  passEl.value = "";
+  modal.style.display = "flex";
+  loginBtn.onclick = loginGeneral;
+  await seedGeneral();
+};
+
+async function seedGeneral(){
+  const ref = doc(db,"generalAdmins","main");
+  if(!(await getDoc(ref)).exists()){
+    await setDoc(ref,{username:"general",password:"9665"});
+  }
+}
+
+async function loginGeneral(){
+  const u = userEl.value.trim();
+  const p = passEl.value.trim();
+  const ref = doc(db,"generalAdmins","main");
+  const snap = await getDoc(ref);
+
+  if(!snap.exists()){
+    msg.textContent="المشرف العام غير مهيأ";
+    return;
+  }
+
+  const d = snap.data();
+  if(d.username!==u || d.password!==p){
+    msg.textContent="بيانات الدخول غير صحيحة";
+    return;
+  }
+
+  sessionStorage.setItem("role","general");
+  window.location.href="general-admin.html";
+}
+
+/* ================= SUPERVISOR ================= */
 window.openSupervisor = () => {
   title.textContent = "دخول المشرف";
   hint.textContent = "";
@@ -105,60 +185,9 @@ window.openSupervisor = () => {
   modal.style.display = "flex";
   loginBtn.onclick = loginSupervisor;
 };
+
 async function loginSupervisor(){
-  msg.textContent="بيانات الدخول غير صحيحة";
-}
-
-/* ---------- ADMIN ---------- */
-window.openAdmin = async () => {
-  title.textContent = "دخول الأدمن";
-  hint.textContent = "اسم المستخدم ثابت: admin";
-  msg.textContent = "";
-  userEl.value = "admin";
-  passEl.value = "";
-  modal.style.display = "flex";
-  loginBtn.onclick = loginAdmin;
-  await seedAdmin();
-};
-async function seedAdmin(){
-  const ref=doc(db,"admins","main");
-  if(!(await getDoc(ref)).exists()){
-    await setDoc(ref,{username:"admin",password:"admin123"});
-  }
-}
-async function loginAdmin(){
-  const ref=doc(db,"admins","main");
-  const snap=await getDoc(ref);
-  if(!snap.exists()||snap.data().password!==passEl.value){
-    msg.textContent="بيانات الدخول غير صحيحة";return;
-  }
-  window.location.href="admin-dashboard.html";
-}
-
-/* ---------- GENERAL ---------- */
-window.openGeneral = async () => {
-  title.textContent = "دخول المشرف العام";
-  hint.textContent = "اسم المستخدم ثابت: general";
-  msg.textContent = "";
-  userEl.value = "general";
-  passEl.value = "";
-  modal.style.display = "flex";
-  loginBtn.onclick = loginGeneral;
-  await seedGeneral();
-};
-async function seedGeneral(){
-  const ref=doc(db,"generalAdmins","main");
-  if(!(await getDoc(ref)).exists()){
-    await setDoc(ref,{username:"general",password:"9665"});
-  }
-}
-async function loginGeneral(){
-  const ref=doc(db,"generalAdmins","main");
-  const snap=await getDoc(ref);
-  if(!snap.exists()||snap.data().password!==passEl.value){
-    msg.textContent="بيانات الدخول غير صحيحة";return;
-  }
-  window.location.href="general-admin.html";
+  msg.textContent="دخول المشرف شغال من صفحته الأصلية";
 }
 </script>
 
