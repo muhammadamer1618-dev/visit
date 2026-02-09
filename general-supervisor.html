@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>أرشيف الزيارات - المشرف العام</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box;font-family:'Cairo',sans-serif}
+body{margin:0;min-height:100vh;background:linear-gradient(135deg,#0d47a1,#1976d2)}
+.wrap{max-width:1200px;margin:auto;padding:18px 14px 40px}
+.card{background:#fff;border-radius:16px;padding:16px;box-shadow:0 15px 40px rgba(0,0,0,.18)}
+.top{text-align:center;margin-bottom:14px}
+.school{font-size:20px;font-weight:700;color:#0d47a1;margin:0}
+.title{font-size:18px;font-weight:600;color:#333;margin:6px 0}
+
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+label{font-size:13px;color:#333}
+input{padding:10px;border:1px solid #ddd;border-radius:10px;font-size:14px}
+
+.btn{border:0;border-radius:10px;padding:10px 14px;font-size:14px;cursor:pointer}
+.btn-primary{background:#1976d2;color:#fff}
+.btn-green{background:#2e7d32;color:#fff}
+.btn-muted{background:#eee;color:#333}
+
+.table-wrap{overflow-x:auto;margin-top:14px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{border:1px solid #ddd;padding:8px;text-align:center;white-space:nowrap}
+th{background:#f5f5f5;font-weight:700}
+
+.footer{text-align:center;margin-top:16px;font-size:14px;color:#e8e8e8}
+.hidden{display:none}
+.msg{font-size:13px;margin-top:6px}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <!-- LOGIN -->
+  <div class="card" id="loginBox">
+    <div class="top">
+      <p class="school">مدارس الفلاح الأهلية</p>
+      <p class="title">دخول المشرف العام</p>
+    </div>
+
+    <div class="row">
+      <div style="flex:1">
+        <label>كلمة المرور</label>
+        <input id="loginPass" type="password">
+      </div>
+      <div style="display:flex;align-items:end">
+        <button class="btn btn-primary" id="loginBtn">دخول</button>
+      </div>
+    </div>
+
+    <div class="msg" id="loginMsg"></div>
+  </div>
+
+  <!-- ARCHIVE -->
+  <div class="card hidden" id="archiveBox">
+
+    <div class="top">
+      <p class="school">مدارس الفلاح الأهلية</p>
+      <p class="title">أرشيف الزيارات - المشرف العام</p>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>اختر التاريخ</label>
+        <input type="date" id="visitDate">
+      </div>
+      <div style="display:flex;align-items:end">
+        <button class="btn btn-primary" id="loadVisitsBtn">عرض الزيارات</button>
+      </div>
+      <div style="margin-right:auto">
+        <button class="btn btn-muted" id="logoutBtn">تسجيل خروج</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>التاريخ</th>
+            <th>اليوم</th>
+            <th>المعلم الزائر</th>
+            <th>المعلم المُزار</th>
+            <th>الفصل</th>
+            <th>الحصة</th>
+            <th>عرض</th>
+          </tr>
+        </thead>
+        <tbody id="visitsTable"></tbody>
+      </table>
+    </div>
+
+    <hr style="margin:20px 0">
+
+    <h4>تغيير كلمة المرور</h4>
+    <div class="row">
+      <div>
+        <label>كلمة المرور الحالية</label>
+        <input type="password" id="oldPass">
+      </div>
+      <div>
+        <label>كلمة المرور الجديدة</label>
+        <input type="password" id="newPass">
+      </div>
+      <div style="display:flex;align-items:end">
+        <button class="btn btn-green" id="changePassBtn">حفظ</button>
+      </div>
+    </div>
+
+    <div class="msg" id="passMsg"></div>
+  </div>
+
+  <div class="footer">تصميم محمد عامر أحمد</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import {
+  getFirestore, collection, getDocs, query, where,
+  doc, getDoc, updateDoc
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
+  authDomain: "visit-2026.firebaseapp.com",
+  projectId: "visit-2026",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+/* LOGIN */
+const loginBtn = document.getElementById("loginBtn");
+loginBtn.onclick = async ()=>{
+  const pass = loginPass.value.trim();
+  const msg = loginMsg;
+  msg.textContent = "";
+
+  const ref = doc(db,"generalSupervisor","main");
+  const snap = await getDoc(ref);
+  if(!snap.exists() || snap.data().password !== pass){
+    msg.textContent = "كلمة المرور غير صحيحة";
+    return;
+  }
+
+  sessionStorage.setItem("gs","1");
+  loginBox.classList.add("hidden");
+  archiveBox.classList.remove("hidden");
+};
+
+/* LOGOUT */
+logoutBtn.onclick = ()=>{
+  sessionStorage.clear();
+  location.reload();
+};
+
+/* LOAD VISITS */
+loadVisitsBtn.onclick = async ()=>{
+  const date = visitDate.value;
+  if(!date) return;
+
+  visitsTable.innerHTML = "";
+
+  const q = query(collection(db,"visits"), where("date","==",date));
+  const res = await getDocs(q);
+
+  res.forEach(d=>{
+    const v = d.data();
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${v.date || ""}</td>
+      <td>${v.day || ""}</td>
+      <td>${v.visitorTeacher || ""}</td>
+      <td>${v.visitedTeacher || ""}</td>
+      <td>${v.className || ""}</td>
+      <td>${v.lesson || ""}</td>
+      <td>
+        <a href="visit-view.html?id=${d.id}" target="_blank">عرض</a>
+      </td>
+    `;
+    visitsTable.appendChild(tr);
+  });
+};
+
+/* CHANGE PASSWORD */
+changePassBtn.onclick = async ()=>{
+  passMsg.textContent = "";
+  const oldP = oldPass.value.trim();
+  const newP = newPass.value.trim();
+
+  const ref = doc(db,"generalSupervisor","main");
+  const snap = await getDoc(ref);
+  if(snap.data().password !== oldP){
+    passMsg.textContent = "كلمة المرور الحالية غير صحيحة";
+    return;
+  }
+
+  await updateDoc(ref,{password:newP});
+  passMsg.textContent = "تم تغيير كلمة المرور";
+  oldPass.value = "";
+  newPass.value = "";
+};
+
+/* SESSION */
+if(sessionStorage.getItem("gs")==="1"){
+  loginBox.classList.add("hidden");
+  archiveBox.classList.remove("hidden");
+}
+</script>
+</body>
+</html>
