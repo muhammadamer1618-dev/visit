@@ -16,11 +16,12 @@ th{background:#f4f4f4}
 label{font-size:14px;font-weight:700}
 textarea{width:100%;min-height:80px;padding:10px;border-radius:10px;border:1px solid #ccc}
 .btn{margin-top:14px;background:#1976d2;color:#fff;border:0;padding:12px 18px;border-radius:12px;font-size:15px;cursor:pointer}
+.msg{margin-top:10px;color:#b71c1c}
 .footer{text-align:center;margin-top:14px;color:#666}
 </style>
 </head>
-<body>
 
+<body>
 <div class="wrap">
   <div class="card">
     <h2>استمارة تبادل زيارة صفّية</h2>
@@ -49,6 +50,7 @@ textarea{width:100%;min-height:80px;padding:10px;border-radius:10px;border:1px s
     <textarea id="recommendations"></textarea>
 
     <button class="btn" id="submitForm">حفظ النموذج</button>
+    <div class="msg" id="msg"></div>
   </div>
 
   <div class="footer">تصميم محمد عامر أحمد</div>
@@ -58,14 +60,23 @@ textarea{width:100%;min-height:80px;padding:10px;border-radius:10px;border:1px s
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import { getFirestore, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-const firebaseConfig = {
+const app = initializeApp({
   apiKey: "AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
   authDomain: "visit-2026.firebaseapp.com",
   projectId: "visit-2026"
-};
+});
 
-const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+const visitId = sessionStorage.getItem("currentVisitId");
+const msg = document.getElementById("msg");
+const positiveNotes = document.getElementById("positiveNotes");
+const recommendations = document.getElementById("recommendations");
+
+if(!visitId){
+  msg.textContent = "لا يوجد رقم زيارة محفوظ، الرجاء البدء من صفحة المعلم";
+  document.getElementById("submitForm").disabled = true;
+}
 
 const questions = [
 "وضوح أهداف الدرس","تسلسل خطوات الدرس","وضوح مخارج الصوت","مناسبة طريقة التدريس",
@@ -92,23 +103,31 @@ questions.forEach((q,i)=>{
 });
 
 document.getElementById("submitForm").onclick = async ()=>{
-  const visitId = sessionStorage.getItem("currentVisitId");
+  if(!visitId) return;
+
   const answers = {};
   for(let i=0;i<questions.length;i++){
     const sel=document.querySelector(`input[name="q${i}"]:checked`);
-    if(!sel){ alert("يرجى استكمال جميع البنود"); return; }
+    if(!sel){
+      msg.textContent = "يرجى استكمال جميع البنود";
+      return;
+    }
     answers["q"+(i+1)] = sel.value;
   }
 
-  await updateDoc(doc(db,"visits",visitId),{
-    formAnswers: answers,
-    positiveNotes: positiveNotes.value,
-    recommendations: recommendations.value,
-    status: "submitted"
-  });
+  try{
+    await updateDoc(doc(db,"visits",visitId),{
+      formAnswers: answers,
+      positiveNotes: positiveNotes.value.trim(),
+      recommendations: recommendations.value.trim(),
+      status: "submitted"
+    });
 
-  alert("تم حفظ النموذج بنجاح");
-  location.href="index.html";
+    alert("تم حفظ النموذج بنجاح");
+    location.href="index.html";
+  }catch(e){
+    msg.textContent = "فشل الحفظ، تأكد من صلاحيات Firestore";
+  }
 };
 </script>
 
