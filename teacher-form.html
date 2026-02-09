@@ -169,10 +169,33 @@
     }
 
     async function loadTeachers(){
-      const q1 = query(
-  collection(db,"teachers"),
-  where("active","==",true)
-);
+  const q1 = query(
+    collection(db,"teachers"),
+    where("active","==",true)
+  );
+
+  const res = await getDocs(q1);
+
+  visitorTeacher.innerHTML = "";
+  visitedTeacher.innerHTML = "";
+  addDefaultOption(visitorTeacher, "اختر المعلم الزائر");
+  addDefaultOption(visitedTeacher, "اختر المعلم المُزار");
+
+  res.forEach(d=>{
+    const data = d.data();
+
+    const o1 = document.createElement("option");
+    o1.value = d.id;
+    o1.textContent = data.name || "";
+    visitorTeacher.appendChild(o1);
+
+    const o2 = document.createElement("option");
+    o2.value = d.id;
+    o2.textContent = data.name || "";
+    visitedTeacher.appendChild(o2);
+  });
+}
+
 
 
       visitorTeacher.innerHTML = "";
@@ -194,11 +217,26 @@
       });
     }
 
-    async function loadClasses(){
-      query(
-  collection(db,"classes"),
-  where("active","==",true)
-)
+  async function loadClasses(){
+  const q1 = query(
+    collection(db,"classes"),
+    where("active","==",true)
+  );
+
+  const res = await getDocs(q1);
+
+  className.innerHTML = "";
+  addDefaultOption(className, "اختر الفصل");
+
+  res.forEach(d=>{
+    const data = d.data();
+    const o = document.createElement("option");
+    o.value = d.id;
+    o.textContent = data.name || "";
+    className.appendChild(o);
+  });
+}
+
 
 
       className.innerHTML = "";
@@ -212,11 +250,30 @@
       });
     }
 
-    async function loadSubjects(){
-      query(
-  collection(db,"subjects"),
-  where("active","==",true)
-)
+async function loadSubjects(){
+  const q1 = query(
+    collection(db,"subjects"),
+    where("active","==",true)
+  );
+
+  const res = await getDocs(q1);
+
+  subject.innerHTML = "";
+  addDefaultOption(subject, "اختر المادة");
+
+  res.forEach(d=>{
+    const data = d.data();
+    const o = document.createElement("option");
+    o.value = d.id;
+    o.textContent = data.name || "";
+    subject.appendChild(o);
+  });
+
+  const other = document.createElement("option");
+  other.value = "__other__";
+  other.textContent = "أخرى";
+  subject.appendChild(other);
+}
 
 
       subject.innerHTML = "";
