@@ -30,6 +30,7 @@ input{padding:12px;border:1px solid #ddd;border-radius:10px}
 .b-cancel{background:#eee}
 .b-submit{background:#1976d2;color:#fff}
 .msg{margin-top:10px;color:#b71c1c;min-height:18px}
+.hint{font-size:13px;color:#666}
 </style>
 </head>
 
@@ -50,7 +51,7 @@ input{padding:12px;border:1px solid #ddd;border-radius:10px}
 
 <div class="modal" id="modal">
   <div class="card">
-    <h3 id="title">تسجيل الدخول</h3>
+    <h3 id="title"></h3>
 
     <div class="row">
       <label>اسم المستخدم</label>
@@ -67,6 +68,7 @@ input{padding:12px;border:1px solid #ddd;border-radius:10px}
       <button class="b-submit" id="loginBtn">دخول</button>
     </div>
 
+    <div class="hint" id="hint"></div>
     <div class="msg" id="msg"></div>
   </div>
 </div>
@@ -85,43 +87,77 @@ const db = getFirestore(app);
 
 const modal = document.getElementById("modal");
 const title = document.getElementById("title");
+const hint = document.getElementById("hint");
 const msg = document.getElementById("msg");
 const userEl = document.getElementById("username");
 const passEl = document.getElementById("password");
 const loginBtn = document.getElementById("loginBtn");
 
+window.closeModal = () => modal.style.display="none";
+
+/* ---------- SUPERVISOR ---------- */
+window.openSupervisor = () => {
+  title.textContent = "دخول المشرف";
+  hint.textContent = "";
+  msg.textContent = "";
+  userEl.value = "";
+  passEl.value = "";
+  modal.style.display = "flex";
+  loginBtn.onclick = loginSupervisor;
+};
+async function loginSupervisor(){
+  msg.textContent="بيانات الدخول غير صحيحة";
+}
+
+/* ---------- ADMIN ---------- */
+window.openAdmin = async () => {
+  title.textContent = "دخول الأدمن";
+  hint.textContent = "اسم المستخدم ثابت: admin";
+  msg.textContent = "";
+  userEl.value = "admin";
+  passEl.value = "";
+  modal.style.display = "flex";
+  loginBtn.onclick = loginAdmin;
+  await seedAdmin();
+};
+async function seedAdmin(){
+  const ref=doc(db,"admins","main");
+  if(!(await getDoc(ref)).exists()){
+    await setDoc(ref,{username:"admin",password:"admin123"});
+  }
+}
+async function loginAdmin(){
+  const ref=doc(db,"admins","main");
+  const snap=await getDoc(ref);
+  if(!snap.exists()||snap.data().password!==passEl.value){
+    msg.textContent="بيانات الدخول غير صحيحة";return;
+  }
+  window.location.href="admin-dashboard.html";
+}
+
+/* ---------- GENERAL ---------- */
 window.openGeneral = async () => {
   title.textContent = "دخول المشرف العام";
+  hint.textContent = "اسم المستخدم ثابت: general";
+  msg.textContent = "";
   userEl.value = "general";
   passEl.value = "";
-  msg.textContent = "";
   modal.style.display = "flex";
   loginBtn.onclick = loginGeneral;
   await seedGeneral();
 };
-
-window.closeModal = () => modal.style.display="none";
-
 async function seedGeneral(){
-  const ref = doc(db,"generalAdmins","main");
-  const snap = await getDoc(ref);
-  if(!snap.exists()){
+  const ref=doc(db,"generalAdmins","main");
+  if(!(await getDoc(ref)).exists()){
     await setDoc(ref,{username:"general",password:"9665"});
   }
 }
-
 async function loginGeneral(){
-  const u = userEl.value.trim();
-  const p = passEl.value.trim();
-  const ref = doc(db,"generalAdmins","main");
-  const snap = await getDoc(ref);
-  if(!snap.exists()){msg.textContent="غير مهيأ";return;}
-  const d = snap.data();
-  if(d.username!==u || d.password!==p){
-    msg.textContent="بيانات الدخول غير صحيحة";
-    return;
+  const ref=doc(db,"generalAdmins","main");
+  const snap=await getDoc(ref);
+  if(!snap.exists()||snap.data().password!==passEl.value){
+    msg.textContent="بيانات الدخول غير صحيحة";return;
   }
-  sessionStorage.setItem("role","general");
   window.location.href="general-admin.html";
 }
 </script>
