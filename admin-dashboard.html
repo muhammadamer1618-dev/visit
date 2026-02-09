@@ -94,9 +94,25 @@
             <label>اسم المعلم</label>
             <input id="tName" />
           </div>
+          <div>
+            <label>رقم الجوال (إجباري) يبدأ بـ 9665</label>
+            <input id="tPhone" inputmode="numeric" placeholder="9665xxxxxxxx" />
+          </div>
+        </div>
+
+        <div class="row two">
           <div style="display:flex;align-items:end;gap:10px">
             <button class="btn btn-primary" id="addTeacherBtn" style="width:100%">إضافة معلم</button>
           </div>
+          <div style="display:flex;align-items:end;gap:10px">
+            <button class="btn btn-green" id="importTeachersBtn" style="width:100%">استيراد (Excel/CSV)</button>
+            <input id="importTeachersFile" type="file" accept=".csv,text/csv" style="display:none" />
+          </div>
+        </div>
+
+        <div class="note">
+          صيغة الملف (CSV): عمودين فقط بالترتيب: اسم المعلم ، رقم الجوال (الأرقام إنجليزي).<br>
+          مثال سطر: محمد أحمد,9665xxxxxxxx
         </div>
 
         <div class="list" id="teachersList"></div>
@@ -168,8 +184,8 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
     import {
-      getFirestore, collection, addDoc, getDocs, query, where, orderBy,
-      doc, updateDoc, getDoc
+      getFirestore, collection, addDoc, getDocs, query, orderBy,
+      doc, updateDoc, getDoc, deleteDoc
     } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -207,6 +223,7 @@
     const supervisorsList = document.getElementById("supervisorsList");
 
     const tName = document.getElementById("tName");
+    const tPhone = document.getElementById("tPhone");
     const teachersList = document.getElementById("teachersList");
 
     const subName = document.getElementById("subName");
@@ -224,9 +241,31 @@
       ]);
     }
 
-    // ✅ إضافة: إرسال رابط المعلم واتساب (باسم المعلم + اسم المدرسة + توقيعك)
-    function sendTeacherLinkWhatsApp(teacherId, teacherName){
-      const link = `${location.origin}/visit/teacher-form.html?tid=${teacherId}`;
+    function normalizePhone(raw){
+      let p = (raw || "").trim();
+      p = p.replace(/\s+/g,"");
+      p = p.replace(/^\+/, "");
+      if(p.startsWith("00")) p = p.slice(2);
+      return p;
+    }
+
+    function isValidTeacherPhone(phone){
+      const p = normalizePhone(phone);
+      if(!p) return false;
+      if(!p.startsWith("9665")) return false;
+      if(!/^\d+$/.test(p)) return false;
+      if(p.length < 12 || p.length > 13) return false;
+      return true;
+    }
+
+    function getTeacherLink(teacherId){
+      return `${location.origin}/visit/teacher-form.html?tid=${teacherId}`;
+    }
+
+    function sendTeacherLinkWhatsAppToPhone(phone, teacherName, teacherId){
+      const p = normalizePhone(phone);
+      const link = getTeacherLink(teacherId);
+
       const message = `
 السلام عليكم ${teacherName}
 هذا رابط نموذج تبادل الزيارات الخاص بك:
@@ -238,9 +277,76 @@ ${link}
 محمد عامر أحمد
       `.trim();
 
-      const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+      const url = `https://wa.me/${encodeURIComponent(p)}?text=${encodeURIComponent(message)}`;
       window.open(url, "_blank");
     }
+
+    function parseCSV(text){
+      const lines = (text || "").replace(/\r/g,"").split("\n").map(x=>x.trim()).filter(Boolean);
+      const rows = [];
+      for(const line of lines){
+        const parts = line.split(",");
+        if(parts.length < 2) continue;
+        const name = (parts[0] || "").trim();
+        const phone = (parts.slice(1).join(",") || "").trim();
+        rows.push({ name, phone });
+      }
+      return rows;
+    }
+
+    async function importTeachersCSV(file){
+      const text = await file.text();
+      const rows = parseCSV(text);
+
+      if(rows.length === 0){
+        alert("الملف فارغ أو غير صحيح");
+        return;
+      }
+
+      const bad = [];
+      const good = [];
+
+      rows.forEach((r, idx)=>{
+        const name = (r.name || "").trim();
+        const phone = normalizePhone(r.phone);
+        if(!name || !isValidTeacherPhone(phone)){
+          bad.push(idx+1);
+        }else{
+          good.push({ name, phone });
+        }
+      });
+
+      if(bad.length){
+        alert("يوجد سطور غير صحيحة في الملف: " + bad.join("، "));
+        return;
+      }
+
+      const ok = confirm("سيتم استيراد " + good.length + " معلم. هل تريد المتابعة؟");
+      if(!ok) return;
+
+      for(const t of good){
+        await addDoc(collection(db, "teachers"), {
+          name: t.name,
+          phone: t.phone,
+          active: true,
+          createdAt: Date.now()
+        });
+      }
+
+      await renderTeachers();
+      alert("تم الاستيراد بنجاح");
+    }
+
+    document.getElementById("importTeachersBtn").onclick = () => {
+      document.getElementById("importTeachersFile").value = "";
+      document.getElementById("importTeachersFile").click();
+    };
+
+    document.getElementById("importTeachersFile").addEventListener("change", async (e)=>{
+      const file = e.target.files && e.target.files[0];
+      if(!file) return;
+      await importTeachersCSV(file);
+    });
 
     document.getElementById("addSupervisorBtn").onclick = async () => {
       const name = (supName.value || "").trim();
@@ -329,9 +435,20 @@ ${link}
           await renderSupervisors();
         };
 
+        const btnDelete = document.createElement("button");
+        btnDelete.className = "btn btn-danger";
+        btnDelete.textContent = "حذف";
+        btnDelete.onclick = async () => {
+          const ok = confirm("تأكيد حذف المشرف نهائيًا؟");
+          if(!ok) return;
+          await deleteDoc(doc(db, "supervisors", d.id));
+          await renderSupervisors();
+        };
+
         actions.appendChild(btnReset);
         actions.appendChild(btnEdit);
         actions.appendChild(btnDisable);
+        actions.appendChild(btnDelete);
 
         el.appendChild(meta);
         el.appendChild(actions);
@@ -341,9 +458,24 @@ ${link}
 
     document.getElementById("addTeacherBtn").onclick = async () => {
       const name = (tName.value || "").trim();
+      const phone = normalizePhone(tPhone.value || "");
+
       if(!name) return;
-      await addDoc(collection(db, "teachers"), { name, active: true, createdAt: Date.now() });
+
+      if(!isValidTeacherPhone(phone)){
+        alert("رقم الجوال إجباري ويجب أن يبدأ بـ 9665");
+        return;
+      }
+
+      await addDoc(collection(db, "teachers"), {
+        name,
+        phone,
+        active: true,
+        createdAt: Date.now()
+      });
+
       tName.value = "";
+      tPhone.value = "";
       await renderTeachers();
     };
 
@@ -366,7 +498,12 @@ ${link}
         nm.className = "name";
         nm.textContent = data.name || "";
 
+        const sb = document.createElement("div");
+        sb.className = "sub";
+        sb.textContent = "الجوال: " + (data.phone || "-");
+
         meta.appendChild(nm);
+        meta.appendChild(sb);
 
         const actions = document.createElement("div");
         actions.className = "actions";
@@ -383,12 +520,33 @@ ${link}
           await renderTeachers();
         };
 
-        // ✅ إضافة: زر إرسال الرابط واتساب (أخضر)
+        const btnPhone = document.createElement("button");
+        btnPhone.className = "btn btn-muted";
+        btnPhone.textContent = "تعديل الجوال";
+        btnPhone.onclick = async () => {
+          const newPhone = prompt("رقم الجوال (يبدأ بـ 9665):", data.phone || "");
+          if(!newPhone) return;
+          const p = normalizePhone(newPhone);
+          if(!isValidTeacherPhone(p)){
+            alert("رقم غير صحيح. يجب أن يبدأ بـ 9665");
+            return;
+          }
+          const ok = confirm("هل أنت متأكد من حفظ رقم الجوال؟");
+          if(!ok) return;
+          await updateDoc(doc(db, "teachers", d.id), { phone: p });
+          await renderTeachers();
+        };
+
         const btnSend = document.createElement("button");
         btnSend.className = "btn btn-green";
         btnSend.textContent = "إرسال الرابط واتساب";
         btnSend.onclick = () => {
-          sendTeacherLinkWhatsApp(d.id, data.name || "");
+          const p = data.phone || "";
+          if(!isValidTeacherPhone(p)){
+            alert("لا يمكن الإرسال: رقم الجوال غير موجود أو غير صحيح");
+            return;
+          }
+          sendTeacherLinkWhatsAppToPhone(p, data.name || "", d.id);
         };
 
         const btnDisable = document.createElement("button");
@@ -401,9 +559,21 @@ ${link}
           await renderTeachers();
         };
 
+        const btnDelete = document.createElement("button");
+        btnDelete.className = "btn btn-danger";
+        btnDelete.textContent = "حذف";
+        btnDelete.onclick = async () => {
+          const ok = confirm("تأكيد حذف المعلم نهائيًا؟");
+          if(!ok) return;
+          await deleteDoc(doc(db, "teachers", d.id));
+          await renderTeachers();
+        };
+
         actions.appendChild(btnEdit);
+        actions.appendChild(btnPhone);
         actions.appendChild(btnSend);
         actions.appendChild(btnDisable);
+        actions.appendChild(btnDelete);
 
         el.appendChild(meta);
         el.appendChild(actions);
@@ -465,8 +635,19 @@ ${link}
           await renderSubjects();
         };
 
+        const btnDelete = document.createElement("button");
+        btnDelete.className = "btn btn-danger";
+        btnDelete.textContent = "حذف";
+        btnDelete.onclick = async () => {
+          const ok = confirm("تأكيد حذف المادة نهائيًا؟");
+          if(!ok) return;
+          await deleteDoc(doc(db, "subjects", d.id));
+          await renderSubjects();
+        };
+
         actions.appendChild(btnEdit);
         actions.appendChild(btnDisable);
+        actions.appendChild(btnDelete);
 
         el.appendChild(meta);
         el.appendChild(actions);
@@ -528,8 +709,19 @@ ${link}
           await renderClasses();
         };
 
+        const btnDelete = document.createElement("button");
+        btnDelete.className = "btn btn-danger";
+        btnDelete.textContent = "حذف";
+        btnDelete.onclick = async () => {
+          const ok = confirm("تأكيد حذف الفصل نهائيًا؟");
+          if(!ok) return;
+          await deleteDoc(doc(db, "classes", d.id));
+          await renderClasses();
+        };
+
         actions.appendChild(btnEdit);
         actions.appendChild(btnDisable);
+        actions.appendChild(btnDelete);
 
         el.appendChild(meta);
         el.appendChild(actions);
