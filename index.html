@@ -9,19 +9,54 @@
 
 <style>
 *{box-sizing:border-box;font-family:'Cairo',sans-serif}
-body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0d47a1,#1976d2)}
-.container{width:92%;max-width:560px;background:#fff;border-radius:18px;padding:34px 26px;text-align:center;box-shadow:0 15px 40px rgba(0,0,0,.25)}
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(135deg,#0d47a1,#1976d2)
+}
+.container{
+  width:92%;
+  max-width:560px;
+  background:#fff;
+  border-radius:18px;
+  padding:34px 26px;
+  text-align:center;
+  box-shadow:0 15px 40px rgba(0,0,0,.25)
+}
 .school{font-size:22px;font-weight:700;color:#0d47a1;margin-bottom:6px}
 .system{font-size:20px;font-weight:600;color:#333;margin-bottom:22px}
 .btns{display:flex;flex-direction:column;gap:12px;margin:18px 0 10px}
-button{border:0;border-radius:12px;padding:14px 16px;font-size:16px;cursor:pointer}
+button{
+  border:0;
+  border-radius:12px;
+  padding:14px 16px;
+  font-size:16px;
+  cursor:pointer
+}
 .b-super{background:#e53935;color:#fff}
 .b-admin{background:#2e7d32;color:#fff}
 .b-general{background:#6a1b9a;color:#fff}
 .footer{margin-top:14px;font-size:14px;color:#666}
 
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center}
-.card{background:#fff;border-radius:16px;padding:18px 16px;width:100%;max-width:420px;text-align:right}
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  display:none;
+  align-items:center;
+  justify-content:center
+}
+.card{
+  background:#fff;
+  border-radius:16px;
+  padding:18px 16px;
+  width:100%;
+  max-width:420px;
+  text-align:right
+}
 .card h3{margin:0 0 10px;color:#0d47a1}
 .row{display:flex;flex-direction:column;gap:6px;margin:10px 0}
 input{padding:12px;border:1px solid #ddd;border-radius:10px}
@@ -95,7 +130,12 @@ const loginBtn = document.getElementById("loginBtn");
 
 window.closeModal = () => modal.style.display="none";
 
-/* ================= ADMIN ================= */
+/* ===== SUPERVISOR (كما كان سابقًا) ===== */
+window.openSupervisor = () => {
+  window.location.href = "supervisor-dashboard.html";
+};
+
+/* ===== ADMIN ===== */
 window.openAdmin = async () => {
   title.textContent = "دخول الأدمن";
   hint.textContent = "اسم المستخدم: admin";
@@ -117,25 +157,16 @@ async function seedAdmin(){
 async function loginAdmin(){
   const u = userEl.value.trim();
   const p = passEl.value.trim();
-  const ref = doc(db,"admins","main");
-  const snap = await getDoc(ref);
+  const snap = await getDoc(doc(db,"admins","main"));
 
-  if(!snap.exists()){
-    msg.textContent="الأدمن غير مهيأ";
-    return;
-  }
-
-  const d = snap.data();
-  if(d.username!==u || d.password!==p){
+  if(!snap.exists() || snap.data().username!==u || snap.data().password!==p){
     msg.textContent="بيانات الدخول غير صحيحة";
     return;
   }
-
-  sessionStorage.setItem("role","admin");
   window.location.href="admin-dashboard.html";
 }
 
-/* ================= GENERAL ================= */
+/* ===== GENERAL SUPERVISOR ===== */
 window.openGeneral = async () => {
   title.textContent = "دخول المشرف العام";
   hint.textContent = "اسم المستخدم: general";
@@ -157,37 +188,13 @@ async function seedGeneral(){
 async function loginGeneral(){
   const u = userEl.value.trim();
   const p = passEl.value.trim();
-  const ref = doc(db,"generalAdmins","main");
-  const snap = await getDoc(ref);
+  const snap = await getDoc(doc(db,"generalAdmins","main"));
 
-  if(!snap.exists()){
-    msg.textContent="المشرف العام غير مهيأ";
-    return;
-  }
-
-  const d = snap.data();
-  if(d.username!==u || d.password!==p){
+  if(!snap.exists() || snap.data().username!==u || snap.data().password!==p){
     msg.textContent="بيانات الدخول غير صحيحة";
     return;
   }
-
-  sessionStorage.setItem("role","general");
   window.location.href="general-admin.html";
-}
-
-/* ================= SUPERVISOR ================= */
-window.openSupervisor = () => {
-  title.textContent = "دخول المشرف";
-  hint.textContent = "";
-  msg.textContent = "";
-  userEl.value = "";
-  passEl.value = "";
-  modal.style.display = "flex";
-  loginBtn.onclick = loginSupervisor;
-};
-
-async function loginSupervisor(){
-  msg.textContent="دخول المشرف شغال من صفحته الأصلية";
 }
 </script>
 
