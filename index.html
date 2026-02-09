@@ -163,12 +163,41 @@ window.openAdmin = async ()=>{
   passwordEl.value="";
   modal.style.display="flex";
   btnLogin.onclick=loginAdmin;
-
-  const ref=doc(db,"admins","main");
-  if(!(await getDoc(ref)).exists()){
-    await setDoc(ref,{username:"admin",password:"admin123"});
-  }
 };
+
+async function loginAdmin(){
+  msg.textContent="";
+
+  const u = usernameEl.value.trim();
+  const p = passwordEl.value.trim();
+
+  if(u !== "admin"){
+    msg.textContent="اسم المستخدم غير صحيح";
+    return;
+  }
+  if(!p){
+    msg.textContent="اكتب كلمة المرور";
+    return;
+  }
+
+  const ref = doc(db,"admins","main");
+  const snap = await getDoc(ref);
+
+  if(!snap.exists()){
+    msg.textContent="الأدمن غير مهيأ";
+    return;
+  }
+
+  const data = snap.data();
+  if(data.password !== p){
+    msg.textContent="كلمة المرور غير صحيحة";
+    return;
+  }
+
+  sessionStorage.setItem("role","admin");
+  sessionStorage.setItem("adminDocId","main");
+  window.location.href="admin-dashboard.html";
+}
 
 window.openGeneral = async ()=>{
   modalTitle.textContent="دخول المشرف العام";
