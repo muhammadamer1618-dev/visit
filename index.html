@@ -1,120 +1,33 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>نظام تبادل الزيارات - مدارس الفلاح الأهلية</title>
-
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-
   <style>
     *{box-sizing:border-box;font-family:'Cairo',sans-serif}
-    body{
-      margin:0;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:linear-gradient(135deg,#0d47a1,#1976d2)
-    }
-    .container{
-      width:92%;
-      max-width:560px;
-      background:#fff;
-      border-radius:18px;
-      padding:34px 26px;
-      text-align:center;
-      box-shadow:0 15px 40px rgba(0,0,0,.25)
-    }
-    .school{
-      font-size:22px;
-      font-weight:700;
-      color:#0d47a1;
-      margin-bottom:6px
-    }
-    .system{
-      font-size:20px;
-      font-weight:600;
-      color:#333;
-      margin-bottom:22px
-    }
-    .btns{
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      margin:18px 0 10px
-    }
-    button{
-      border:0;
-      border-radius:12px;
-      padding:14px 16px;
-      font-size:16px;
-      cursor:pointer;
-      transition:.25s
-    }
+    body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0d47a1,#1976d2)}
+    .container{width:92%;max-width:560px;background:#fff;border-radius:18px;padding:34px 26px;text-align:center;box-shadow:0 15px 40px rgba(0,0,0,.25)}
+    .school{font-size:22px;font-weight:700;color:#0d47a1;margin-bottom:6px}
+    .system{font-size:20px;font-weight:600;color:#333;margin-bottom:22px}
+    .btns{display:flex;flex-direction:column;gap:12px;margin:18px 0 10px}
+    button{border:0;border-radius:12px;padding:14px 16px;font-size:16px;cursor:pointer}
     .b-super{background:#e53935;color:#fff}
-    .b-super:hover{background:#b71c1c}
-
     .b-general{background:#1976d2;color:#fff}
-    .b-general:hover{background:#0d47a1}
-
     .b-admin{background:#2e7d32;color:#fff}
-    .b-admin:hover{background:#1b5e20}
+    .footer{margin-top:14px;font-size:14px;color:#666}
 
-    .footer{
-      margin-top:14px;
-      font-size:14px;
-      color:#666
-    }
-
-    .modal{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.45);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:16px
-    }
-    .card{
-      width:100%;
-      max-width:520px;
-      background:#fff;
-      border-radius:16px;
-      padding:18px 16px;
-      box-shadow:0 15px 40px rgba(0,0,0,.25);
-      text-align:right
-    }
-    .card h3{
-      margin:0 0 10px;
-      font-size:18px;
-      color:#0d47a1
-    }
-    .row{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      margin:10px 0
-    }
-    label{font-size:14px;color:#333}
-    input{
-      width:100%;
-      padding:12px;
-      border:1px solid #ddd;
-      border-radius:10px;
-      font-size:15px
-    }
-    .actions{
-      display:flex;
-      gap:10px;
-      margin-top:12px
-    }
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center}
+    .card{background:#fff;border-radius:16px;padding:20px;width:90%;max-width:420px;text-align:right}
+    .card h3{margin:0 0 12px;color:#0d47a1}
+    label{font-size:14px}
+    input{width:100%;padding:12px;margin-top:6px;border:1px solid #ddd;border-radius:10px}
+    .actions{display:flex;gap:10px;margin-top:14px}
     .actions button{flex:1}
-    .b-cancel{background:#eee;color:#333}
-    .b-submit{background:#1976d2;color:#fff}
-    .b-submit:hover{background:#0d47a1}
-    .hint{font-size:13px;color:#666;margin-top:6px}
-    .msg{margin-top:10px;font-size:14px;color:#b71c1c;min-height:18px}
+    .cancel{background:#eee}
+    .submit{background:#1976d2;color:#fff}
+    .msg{margin-top:10px;color:#b71c1c;min-height:18px}
   </style>
 </head>
 <body>
@@ -134,65 +47,70 @@
 
 <div class="modal" id="modal">
   <div class="card">
-    <h3 id="modalTitle">تسجيل الدخول</h3>
+    <h3 id="title"></h3>
 
-    <div class="row">
-      <label>اسم المستخدم</label>
-      <input id="username">
-    </div>
+    <label>اسم المستخدم</label>
+    <input id="username">
 
-    <div class="row">
-      <label>كلمة المرور</label>
-      <input id="password" type="password">
-    </div>
+    <label style="margin-top:10px">كلمة المرور</label>
+    <input id="password" type="password">
 
     <div class="actions">
-      <button class="b-cancel" onclick="closeModal()">إلغاء</button>
-      <button class="b-submit" onclick="login()">دخول</button>
+      <button class="cancel" onclick="closeModal()">إلغاء</button>
+      <button class="submit" onclick="login()">دخول</button>
     </div>
 
-    <div class="hint" id="hint"></div>
     <div class="msg" id="msg"></div>
   </div>
 </div>
 
-<script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+  import { getFirestore, collection, query, where, getDocs, limit } 
+  from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
+    authDomain: "visit-2026.firebaseapp.com",
+    projectId: "visit-2026"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
   const modal = document.getElementById("modal");
-  const modalTitle = document.getElementById("modalTitle");
-  const usernameEl = document.getElementById("username");
-  const passwordEl = document.getElementById("password");
+  const title = document.getElementById("title");
   const msg = document.getElementById("msg");
-  const hint = document.getElementById("hint");
+  const uEl = document.getElementById("username");
+  const pEl = document.getElementById("password");
 
-  let role = "";
+  let mode = "";
 
-  function openSupervisor(){
-    role="supervisor";
-    modalTitle.textContent="دخول المشرف";
-    hint.textContent="";
-    usernameEl.value="";
-    passwordEl.value="";
-    msg.textContent="";
-    modal.style.display="flex";
+  const ADMIN_PASSWORD = "admin123";
+  const GENERAL_PASSWORD = "general123";
+
+  function openAdmin(){
+    mode="admin";
+    title.textContent="دخول الأدمن";
+    open();
   }
 
   function openGeneral(){
-    role="general";
-    modalTitle.textContent="دخول المشرف العام";
-    hint.textContent="اسم المستخدم ثابت: general";
-    usernameEl.value="general";
-    passwordEl.value="";
-    msg.textContent="";
-    modal.style.display="flex";
+    mode="general";
+    title.textContent="دخول المشرف العام";
+    open();
   }
 
-  function openAdmin(){
-    role="admin";
-    modalTitle.textContent="دخول الأدمن";
-    hint.textContent="اسم المستخدم ثابت: admin";
-    usernameEl.value="admin";
-    passwordEl.value="";
+  function openSupervisor(){
+    mode="supervisor";
+    title.textContent="دخول المشرف";
+    open();
+  }
+
+  function open(){
     msg.textContent="";
+    uEl.value="";
+    pEl.value="";
     modal.style.display="flex";
   }
 
@@ -200,26 +118,44 @@
     modal.style.display="none";
   }
 
-  function login(){
-    const u=usernameEl.value.trim();
-    const p=passwordEl.value.trim();
+  async function login(){
+    const u = uEl.value.trim();
+    const p = pEl.value.trim();
 
-    if(!u||!p){msg.textContent="أكمل البيانات";return;}
+    if(!u || !p){
+      msg.textContent="اكمل البيانات";
+      return;
+    }
 
-    if(role==="admin" && u==="admin" && p==="admin123"){
-  window.location.href="./admin-dashboard.html";
-  return;
-}
+    if(mode==="admin"){
+      if(u==="admin" && p===ADMIN_PASSWORD){
+        window.location.href="admin-dashboard.html";
+        return;
+      }
+    }
 
-if(role==="general" && u==="general" && p==="9665"){
-  window.location.href="./general-supervisor.html";
-  return;
-}
+    if(mode==="general"){
+      if(u==="general" && p===GENERAL_PASSWORD){
+        window.location.href="general-supervisor.html";
+        return;
+      }
+    }
 
-if(role==="supervisor"){
-  window.location.href="./supervisor-dashboard.html";
-  return;
-}
+    if(mode==="supervisor"){
+      const q = query(
+        collection(db,"supervisors"),
+        where("username","==",u),
+        where("password","==",p),
+        where("active","==",true),
+        limit(1)
+      );
+      const res = await getDocs(q);
+      if(!res.empty){
+        window.location.href="supervisor-dashboard.html";
+        return;
+      }
+    }
+
     msg.textContent="بيانات الدخول غير صحيحة";
   }
 </script>
