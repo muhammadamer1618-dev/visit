@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>لوحة المشرف - تبادل الزيارات</title>
+<title>أرشيف الزيارات - المشرف العام</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -11,27 +11,26 @@
 *{box-sizing:border-box;font-family:'Cairo',sans-serif}
 body{margin:0;min-height:100vh;background:linear-gradient(135deg,#0d47a1,#1976d2)}
 .wrap{max-width:1100px;margin:0 auto;padding:18px}
-.top{background:#fff;border-radius:16px;padding:16px;box-shadow:0 15px 40px rgba(0,0,0,.18);text-align:center}
+.top{background:#fff;border-radius:16px;padding:16px;text-align:center;box-shadow:0 15px 40px rgba(0,0,0,.18)}
 .school{font-size:20px;font-weight:700;color:#0d47a1;margin:0}
-.title{font-size:18px;font-weight:600;margin-top:6px;color:#333}
-.card{margin-top:14px;background:#fff;border-radius:16px;padding:16px;box-shadow:0 15px 40px rgba(0,0,0,.18)}
-.controls{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}
-label{font-size:14px;color:#333}
-select{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:14px}
-.btn{border:0;border-radius:10px;padding:12px 16px;font-size:14px;cursor:pointer}
+.title{font-size:18px;margin-top:6px;color:#333}
+
+.card{margin-top:14px;background:#fff;border-radius:16px;padding:14px;box-shadow:0 15px 40px rgba(0,0,0,.18)}
+
+.row{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end}
+label{font-size:14px}
+input{padding:12px;border-radius:10px;border:1px solid #ccc;font-size:15px}
+
+.btn{border:0;border-radius:12px;padding:12px 16px;font-size:15px;cursor:pointer}
 .btn-primary{background:#1976d2;color:#fff}
 .btn-primary:hover{background:#0d47a1}
-.btn-print{background:#1976d2;color:#fff}
-.btn-delete{background:#e53935;color:#fff}
-.list{margin-top:16px}
-.item{border:1px solid #eee;border-radius:14px;padding:12px;margin-bottom:12px}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.k{font-size:13px;color:#666}
-.v{font-weight:700;color:#111}
-.actions{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
-.msg{margin-top:10px;color:#b71c1c;min-height:18px}
+
+table{width:100%;border-collapse:collapse;margin-top:14px}
+th,td{border:1px solid #ccc;padding:8px;text-align:center;font-size:14px}
+th{background:#f4f4f4}
+
+.msg{text-align:center;margin-top:10px;color:#b71c1c}
 .footer{text-align:center;margin-top:16px;color:#e8e8e8}
-@media print{.top,.controls,.actions,.footer{display:none}}
 </style>
 </head>
 
@@ -40,21 +39,36 @@ select{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-siz
 
   <div class="top">
     <p class="school">مدارس الفلاح الأهلية</p>
-    <p class="title">لوحة المشرف – تبادل الزيارات</p>
-    <a href="index.html" style="font-weight:700;color:#1976d2;text-decoration:none">الصفحة الرئيسية</a>
+    <p class="title">أرشيف الزيارات – المشرف العام</p>
+    <a href="index.html" style="color:#1976d2;font-weight:700;text-decoration:none">الصفحة الرئيسية</a>
   </div>
 
   <div class="card">
-    <div class="controls">
+    <div class="row">
       <div>
-        <label>المعلم الزائر</label>
-        <select id="visitorSelect"></select>
+        <label>تاريخ الزيارات</label>
+        <input type="date" id="visitDate">
       </div>
-      <button class="btn btn-primary" id="loadBtn">عرض زيارات المعلم</button>
+      <div></div>
+      <button class="btn btn-primary" id="loadBtn">عرض الزيارات</button>
     </div>
 
+    <table id="table" style="display:none">
+      <thead>
+        <tr>
+          <th>اليوم</th>
+          <th>التاريخ</th>
+          <th>المعلم الزائر</th>
+          <th>المعلم المُزار</th>
+          <th>الفصل</th>
+          <th>الحصة</th>
+          <th>الإجراء</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
     <div class="msg" id="msg"></div>
-    <div class="list" id="visitsList"></div>
   </div>
 
   <div class="footer">تصميم محمد عامر أحمد</div>
@@ -62,10 +76,13 @@ select{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-siz
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import {
-  getFirestore, collection, getDocs, query, where, limit,
-  deleteDoc, doc
-} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, query, where } 
+from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+/* auth check */
+if(sessionStorage.getItem("role")!=="supervisor"){
+  location.href="index.html";
+}
 
 const app = initializeApp({
   apiKey: "AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
@@ -74,120 +91,59 @@ const app = initializeApp({
 });
 const db = getFirestore(app);
 
-const visitorSelect = document.getElementById("visitorSelect");
-const visitsList = document.getElementById("visitsList");
-const msg = document.getElementById("msg");
-const loadBtn = document.getElementById("loadBtn");
+const visitDate=document.getElementById("visitDate");
+const table=document.getElementById("table");
+const tbody=table.querySelector("tbody");
+const msg=document.getElementById("msg");
 
-function addDefault(sel, text){
-  sel.innerHTML = "";
-  const o = document.createElement("option");
-  o.value = "";
-  o.textContent = text;
-  sel.appendChild(o);
+function getDayName(dateStr){
+  const d=new Date(dateStr);
+  return ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"][d.getDay()];
 }
 
-function kv(k, v){
-  return `
-    <div>
-      <div class="k">${k}</div>
-      <div class="v">${v}</div>
-    </div>
-  `;
-}
+document.getElementById("loadBtn").onclick=async()=>{
+  msg.textContent="";
+  tbody.innerHTML="";
+  table.style.display="none";
 
-async function loadVisitors(){
-  addDefault(visitorSelect, "اختر المعلم");
-  const res = await getDocs(query(collection(db,"teachers"), where("active","==",true)));
-  res.forEach(d=>{
-    const o = document.createElement("option");
-    o.value = d.id;
-    o.textContent = d.data().name || "";
-    visitorSelect.appendChild(o);
-  });
-}
-
-function renderVisits(docs){
-  visitsList.innerHTML = "";
-  if(docs.length === 0){
-    msg.textContent = "لا توجد زيارات لهذا المعلم";
+  if(!visitDate.value){
+    msg.textContent="اختر التاريخ أولًا";
     return;
   }
 
-  docs.forEach(({id, data})=>{
-    const v = data;
-
-    const div = document.createElement("div");
-    div.className = "item";
-
-    div.innerHTML = `
-      <div class="row">
-        ${kv("اليوم", v.visitDay || "")}
-        ${kv("التاريخ", v.visitDate || "")}
-        ${kv("المعلم المُزار", v.visitedTeacherName || "")}
-        ${kv("الفصل", v.classText || "")}
-        ${kv("الحصة", v.periodText || ("الحصة " + (v.period ?? "")))}
-        ${kv("المادة", v.subjectText || "")}
-        ${kv("عنوان الدرس", v.lessonTitle || "")}
-      </div>
-
-      <div class="actions">
-        <button class="btn btn-print" onclick="window.open('visit-print.html?id=${id}','_blank')">طباعة</button>
-        <button class="btn btn-delete" data-id="${id}">حذف</button>
-      </div>
-    `;
-
-    div.querySelector(".btn-delete").onclick = async ()=>{
-      if(!confirm("هل أنت متأكد من حذف هذه الزيارة؟")) return;
-      await deleteDoc(doc(db,"visits",id));
-      loadVisits();
-    };
-
-    visitsList.appendChild(div);
-  });
-}
-
-async function loadVisits(){
-  visitsList.innerHTML = "";
-  msg.textContent = "";
-
-  const teacherId = visitorSelect.value;
-  const teacherName = visitorSelect.options[visitorSelect.selectedIndex]?.textContent || "";
-
-  if(!teacherId){
-    msg.textContent = "اختر المعلم الزائر أولًا";
-    return;
-  }
-
-  // 1) Primary: where by visitorTeacherId (NO orderBy to avoid composite index)
-  const primaryRes = await getDocs(
-    query(collection(db,"visits"), where("visitorTeacherId","==",teacherId))
+  const q=query(
+    collection(db,"visits"),
+    where("visitDate","==",visitDate.value)
   );
 
-  let docs = primaryRes.docs.map(d => ({ id: d.id, data: d.data() }));
+  const res=await getDocs(q);
 
-  // Sort locally by createdAt desc
-  docs.sort((a,b)=> (Number(b.data.createdAt||0) - Number(a.data.createdAt||0)));
-
-  if(docs.length > 0){
-    renderVisits(docs);
+  if(res.empty){
+    msg.textContent="لا توجد زيارات في هذا التاريخ";
     return;
   }
 
-  // 2) Fallback: scan last 500 visits and match by visitorTeacherName (for old records / mismatched ids)
-  const scanRes = await getDocs(query(collection(db,"visits"), limit(500)));
-  const scanned = scanRes.docs.map(d => ({ id: d.id, data: d.data() }));
+  res.forEach(d=>{
+    const v=d.data();
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td>${getDayName(v.visitDate)}</td>
+      <td>${v.visitDate}</td>
+      <td>${v.visitorTeacherName||""}</td>
+      <td>${v.visitedTeacherName||""}</td>
+      <td>${v.classText||""}</td>
+      <td>${v.periodText||""}</td>
+      <td>
+        <button class="btn btn-primary" onclick="location.href='visit-view.html?id=${d.id}'">
+          عرض
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
 
-  const filtered = scanned.filter(x => (x.data.visitorTeacherName || "") === teacherName);
-  filtered.sort((a,b)=> (Number(b.data.createdAt||0) - Number(a.data.createdAt||0)));
-
-  renderVisits(filtered);
-}
-
-loadBtn.onclick = loadVisits;
-
-loadVisitors();
+  table.style.display="table";
+};
 </script>
-
 </body>
 </html>
