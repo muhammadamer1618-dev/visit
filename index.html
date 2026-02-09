@@ -19,15 +19,13 @@ body{
   display:flex;
   align-items:center;
   justify-content:center;
-  color:#fff;
 }
 
 .container{
   background:#ffffff;
-  color:#333;
   width:90%;
-  max-width:500px;
-  border-radius:16px;
+  max-width:520px;
+  border-radius:18px;
   padding:40px 30px;
   text-align:center;
   box-shadow:0 15px 40px rgba(0,0,0,0.25);
@@ -36,7 +34,7 @@ body{
 .school-name{
   font-size:22px;
   font-weight:700;
-  margin-bottom:10px;
+  margin-bottom:8px;
   color:#0d47a1;
 }
 
@@ -44,6 +42,7 @@ body{
   font-size:20px;
   font-weight:600;
   margin-bottom:30px;
+  color:#333;
 }
 
 .buttons{
@@ -57,7 +56,7 @@ button{
   padding:14px;
   font-size:16px;
   border:none;
-  border-radius:10px;
+  border-radius:12px;
   cursor:pointer;
   transition:0.3s;
 }
@@ -80,6 +79,15 @@ button{
   background:#b71c1c;
 }
 
+.admin-btn{
+  background:#2e7d32;
+  color:#fff;
+}
+
+.admin-btn:hover{
+  background:#1b5e20;
+}
+
 .footer{
   font-size:14px;
   color:#666;
@@ -97,6 +105,7 @@ button{
   <div class="buttons">
     <button class="teacher-btn" onclick="goTeacher()">دخول المعلم</button>
     <button class="supervisor-btn" onclick="goSupervisor()">دخول المشرف</button>
+    <button class="admin-btn" onclick="goAdmin()">دخول الأدمن</button>
   </div>
 
   <div class="footer">
@@ -110,11 +119,20 @@ function goTeacher(){
 }
 
 function goSupervisor(){
-  const password = prompt("أدخل كلمة المرور:");
-  if(password === "1234"){
+  const password = prompt("أدخل كلمة مرور المشرف:");
+  if(password === "SUP123"){
     window.location.href = "supervisor-dashboard.html";
   }else{
     alert("كلمة المرور غير صحيحة");
+  }
+}
+
+function goAdmin(){
+  const password = prompt("أدخل كلمة مرور الأدمن:");
+  if(password === "ADMIN123"){
+    window.location.href = "admin-dashboard.html";
+  }else{
+    alert("غير مصرح بالدخول");
   }
 }
 </script>
