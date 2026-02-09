@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>لوحة المشرف - نظام تبادل الزيارات</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;font-family:'Cairo',sans-serif}
+    body{margin:0;min-height:100vh;background:linear-gradient(135deg,#0d47a1,#1976d2)}
+    .wrap{max-width:1100px;margin:0 auto;padding:18px 14px 40px}
+    .top{background:#fff;border-radius:16px;padding:16px 14px;box-shadow:0 15px 40px rgba(0,0,0,.18);text-align:center}
+    .school{font-size:20px;font-weight:700;color:#0d47a1;margin:0}
+    .title{font-size:18px;font-weight:600;margin:6px 0 0;color:#333}
+    .bar{display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+    .btn{border:0;border-radius:10px;padding:11px 12px;font-size:14px;cursor:pointer;transition:.2s}
+    .btn-muted{background:#eee;color:#333}
+    .btn-primary{background:#1976d2;color:#fff}
+    .btn-primary:hover{background:#0d47a1}
+    .card{margin-top:14px;background:#fff;border-radius:16px;padding:14px 12px;box-shadow:0 15px 40px rgba(0,0,0,.18)}
+    label{font-size:13px;color:#333}
+    select,input{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:14px}
+    .filters{display:grid;grid-template-columns:1fr;gap:10px}
+    @media (min-width:800px){.filters{grid-template-columns:1fr 1fr}}
+    .list{margin-top:12px}
+    .item{border:1px solid #eee;border-radius:14px;padding:12px;margin-bottom:10px}
+    .row{display:grid;grid-template-columns:1fr;gap:10px}
+    @media (min-width:900px){.row{grid-template-columns:1fr 1fr}}
+    .k{color:#666;font-size:13px}
+    .v{color:#111;font-weight:700}
+    .actions{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+    .btn-danger{background:#e53935;color:#fff}
+    .btn-danger:hover{background:#b71c1c}
+    .footer{margin-top:16px;text-align:center;font-size:14px;color:#e8e8e8}
+    .msg{margin-top:10px;min-height:18px;color:#b71c1c}
+    @media print{.footer{color:#333}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <p class="school">مدارس الفلاح الأهلية</p>
+      <p class="title" id="welcomeTitle">لوحة المشرف</p>
+      <div class="bar">
+        <button class="btn btn-muted" id="logoutBtn">تسجيل خروج</button>
+        <button class="btn btn-primary" id="changePassBtn">تغيير كلمة المرور</button>
+        <a href="index.html" style="color:#1976d2;text-decoration:none;font-weight:700">الصفحة الرئيسية</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="filters">
+        <div>
+          <label>المعلم الزائر (النشطون فقط)</label>
+          <select id="visitorFilter"></select>
+        </div>
+        <div>
+          <label>بحث بالاسم (للزيارات القديمة)</label>
+          <input id="searchName" placeholder="اكتب اسم المعلم الزائر" />
+        </div>
+      </div>
+
+      <div class="msg" id="msg"></div>
+      <div class="list" id="visitsList"></div>
+    </div>
+
+    <div class="footer">تصميم محمد عامر أحمد</div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import {
+      getFirestore, collection, getDocs, query, where, orderBy, limit
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
+      authDomain: "visit-2026.firebaseapp.com",
+      projectId: "visit-2026",
+      storageBucket: "visit-2026.firebasestorage.app",
+      messagingSenderId: "355064530699",
+      appId: "1:355064530699:web:26ad1710ff493c76ce840e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    function requireSupervisor(){
+      const role = sessionStorage.getItem("role");
+      const supId = sessionStorage.getItem("supervisorId");
+      if(role !== "supervisor" || !supId){
+        location.href = "index.html";
+        return false;
+      }
+      return true;
+    }
+    if(!requireSupervisor()) {}
+
+    const welcomeTitle = document.getElementById("welcomeTitle");
+    const supName = sessionStorage.getItem("supervisorName") || "";
+    welcomeTitle.textContent = supName ? ("لوحة المشرف - " + supName) : "لوحة المشرف";
+
+    document.getElementById("logoutBtn").onclick = () => {
+      sessionStorage.clear();
+      location.href = "index.html";
+    };
+
+    document.getElementById("changePassBtn").onclick = () => {
+      location.href = "change-password.html?role=supervisor";
+    };
+
+    const visitorFilter = document.getElementById("visitorFilter");
+    const searchName = document.getElementById("searchName");
+    const visitsList = document.getElementById("visitsList");
+    const msg = document.getElementById("msg");
+
+    function addDefaultOption(sel, text){
+      const o = document.createElement("option");
+      o.value = "";
+      o.textContent = text;
+      o.disabled = true;
+      o.selected = true;
+      sel.appendChild(o);
+    }
+
+    async function loadActiveTeachers(){
+      visitorFilter.innerHTML = "";
+      addDefaultOption(visitorFilter, "اختر المعلم الزائر");
+      const tq = query(collection(db,"teachers"), where("active","==",true), orderBy("name"));
+      const res = await getDocs(tq);
+      res.forEach(d=>{
+        const data=d.data();
+        const o=document.createElement("option");
+        o.value=d.id;
+        o.textContent=data.name || "";
+        visitorFilter.appendChild(o);
+      });
+    }
+
+    async function loadVisitsByVisitorId(teacherId){
+      visitsList.innerHTML = "";
+      msg.textContent = "";
+      const qv = query(
+        collection(db,"visits"),
+        where("visitorTeacherId","==",teacherId),
+        orderBy("createdAt","desc"),
+        limit(200)
+      );
+      const res = await getDocs(qv);
+      if(res.empty){ msg.textContent = "لا توجد زيارات لهذا المعلم"; return; }
+      renderVisits(res);
+    }
+
+    async function loadVisitsByVisitorNameText(nameText){
+      visitsList.innerHTML = "";
+      msg.textContent = "";
+      const qv = query(collection(db,"visits"), orderBy("createdAt","desc"), limit(200));
+      const res = await getDocs(qv);
+      const filtered = res.docs.filter(d => {
+        const data = d.data();
+        const n = (data.visitorTeacherName || "").trim();
+        return n.includes(nameText);
+      });
+      if(filtered.length === 0){ msg.textContent = "لا توجد نتائج"; return; }
+      renderVisits({ forEach: (fn)=> filtered.forEach(fn) });
+    }
+
+    function renderVisits(resLike){
+      visitsList.innerHTML = "";
+      resLike.forEach(d=>{
+        const data = d.data();
+
+        const el = document.createElement("div");
+        el.className = "item";
+
+        const row = document.createElement("div");
+        row.className = "row";
+
+        row.appendChild(kv("المعلم الزائر", data.visitorTeacherName || ""));
+        row.appendChild(kv("المعلم المُزار", data.visitedTeacherName || ""));
+        row.appendChild(kv("الفصل", data.classText || ""));
+        row.appendChild(kv("الحصة", data.periodText || ("الحصة " + (data.period||""))));
+        row.appendChild(kv("المادة", data.subjectText || ""));
+        row.appendChild(kv("عنوان الدرس", data.lessonTitle || ""));
+
+        const actions = document.createElement("div");
+        actions.className = "actions";
+
+        const btnPrint = document.createElement("button");
+        btnPrint.className = "btn btn-primary";
+        btnPrint.textContent = "طباعة";
+        btnPrint.onclick = () => {
+          window.open("visit-print.html?id=" + encodeURIComponent(d.id), "_blank");
+        };
+
+        actions.appendChild(btnPrint);
+
+        el.appendChild(row);
+        el.appendChild(actions);
+        visitsList.appendChild(el);
+      });
+    }
+
+    function kv(k, v){
+      const box = document.createElement("div");
+      const kk = document.createElement("div");
+      kk.className = "k";
+      kk.textContent = k;
+      const vv = document.createElement("div");
+      vv.className = "v";
+      vv.textContent = v;
+      box.appendChild(kk);
+      box.appendChild(vv);
+      return box;
+    }
+
+    visitorFilter.onchange = async () => {
+      if(!visitorFilter.value) return;
+      await loadVisitsByVisitorId(visitorFilter.value);
+    };
+
+    searchName.oninput = async () => {
+      const t = (searchName.value||"").trim();
+      if(t.length < 2) return;
+      await loadVisitsByVisitorNameText(t);
+    };
+
+    await loadActiveTeachers();
+  </script>
+</body>
+</html>
