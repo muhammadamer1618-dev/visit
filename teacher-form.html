@@ -36,7 +36,7 @@ textarea{min-height:90px}
 
   <div class="top">
     <p class="school">مدارس الفلاح الأهلية</p>
-    <p class="title">صفحة المعلم – بيانات الزيارة</p>
+    <p class="title" id="pageTitle">صفحة المعلم – بيانات الزيارة</p>
     <a href="index.html" style="font-weight:700;color:#1976d2;text-decoration:none">الصفحة الرئيسية</a>
   </div>
 
@@ -60,10 +60,8 @@ textarea{min-height:90px}
         <input type="date" id="visitDate">
       </div>
 
-      <div>
-        <label>المعلم الزائر</label>
-        <select id="visitorTeacher"></select>
-      </div>
+      <!-- المعلم الزائر (مخفي ومحدد تلقائيًا) -->
+      <input type="hidden" id="visitorTeacher">
 
       <div>
         <label>المعلم المُزار</label>
@@ -115,15 +113,22 @@ textarea{min-height:90px}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import { getFirestore, collection, getDocs, query, where, addDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, query, where, addDoc, doc, getDoc } 
+from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-/* Firebase */
 const app = initializeApp({
   apiKey: "AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
   authDomain: "visit-2026.firebaseapp.com",
   projectId: "visit-2026"
 });
 const db = getFirestore(app);
+
+/* read tid */
+const params = new URLSearchParams(window.location.search);
+const teacherId = params.get("tid");
+if(!teacherId){
+  location.href = "index.html";
+}
 
 /* elements */
 const visitorTeacher = document.getElementById("visitorTeacher");
@@ -138,6 +143,7 @@ const otherWrap = document.getElementById("otherWrap");
 const lessonTitle = document.getElementById("lessonTitle");
 const objective = document.getElementById("objective");
 const msg = document.getElementById("msg");
+const pageTitle = document.getElementById("pageTitle");
 
 /* helpers */
 function addDefault(sel,text){
@@ -171,6 +177,18 @@ async function loadSelect(col,sel,placeholder){
   });
 }
 
+/* load visitor teacher from tid */
+async function loadVisitorTeacher(){
+  const snap = await getDoc(doc(db,"teachers",teacherId));
+  if(!snap.exists()){
+    location.href="index.html";
+    return;
+  }
+  const data = snap.data();
+  visitorTeacher.value = teacherId;
+  pageTitle.textContent = "صفحة المعلم – " + (data.name || "");
+}
+
 /* subject other */
 subject.onchange = ()=>{
   otherWrap.style.display = subject.value==="__other__" ? "block" : "none";
@@ -183,7 +201,6 @@ document.getElementById("startBtn").onclick = async ()=>{
   if(
     !visitDay.value ||
     !visitDate.value ||
-    !visitorTeacher.value ||
     !visitedTeacher.value ||
     !period.value ||
     !className.value ||
@@ -200,8 +217,8 @@ document.getElementById("startBtn").onclick = async ()=>{
       visitDay: visitDay.value,
       visitDate: visitDate.value,
 
-      visitorTeacherId: visitorTeacher.value,
-      visitorTeacherName: visitorTeacher.options[visitorTeacher.selectedIndex].textContent,
+      visitorTeacherId: teacherId,
+      visitorTeacherName: pageTitle.textContent.replace("صفحة المعلم – ",""),
 
       visitedTeacherId: visitedTeacher.value,
       visitedTeacherName: visitedTeacher.options[visitedTeacher.selectedIndex].textContent,
@@ -224,7 +241,6 @@ document.getElementById("startBtn").onclick = async ()=>{
       createdAt: Date.now()
     });
 
-    /* 👇 فتح نموذج الزيارة مع ID */
     window.location.href = "visit-form.html?id=" + ref.id;
 
   }catch(e){
@@ -234,7 +250,7 @@ document.getElementById("startBtn").onclick = async ()=>{
 
 /* init */
 fillPeriods();
-loadSelect("teachers",visitorTeacher,"اختر المعلم الزائر");
+loadVisitorTeacher();
 loadSelect("teachers",visitedTeacher,"اختر المعلم المُزار");
 loadSelect("classes",className,"اختر الفصل");
 loadSelect("subjects",subject,"اختر المادة");
