@@ -1,364 +1,200 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>صفحة المعلم - نظام تبادل الزيارات</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    *{box-sizing:border-box;font-family:'Cairo',sans-serif}
-    body{margin:0;min-height:100vh;background:linear-gradient(135deg,#0d47a1,#1976d2)}
-    .wrap{max-width:900px;margin:0 auto;padding:18px 14px 40px}
-    .top{background:#fff;border-radius:16px;padding:16px 14px;box-shadow:0 15px 40px rgba(0,0,0,.18);text-align:center}
-    .school{font-size:20px;font-weight:700;color:#0d47a1;margin:0}
-    .title{font-size:18px;font-weight:600;margin:6px 0 0;color:#333}
-    .card{margin-top:14px;background:#fff;border-radius:16px;padding:14px 12px;box-shadow:0 15px 40px rgba(0,0,0,.18)}
-    .grid{display:grid;grid-template-columns:1fr;gap:10px}
-    @media (min-width:700px){.grid{grid-template-columns:1fr 1fr}}
-    label{font-size:13px;color:#333}
-    select,input,textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:14px}
-    textarea{min-height:90px;resize:vertical}
-    .btnRow{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
-    .btn{border:0;border-radius:12px;padding:12px 14px;font-size:15px;cursor:pointer;transition:.2s}
-    .btn-primary{background:#1976d2;color:#fff}
-    .btn-primary:hover{background:#0d47a1}
-    .btn-muted{background:#eee;color:#333}
-    .msg{margin-top:10px;min-height:18px;font-size:14px;color:#b71c1c}
-    .footer{margin-top:16px;text-align:center;font-size:14px;color:#e8e8e8}
-    @media print{.footer{color:#333}}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>صفحة المعلم - نظام تبادل الزيارات</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box;font-family:'Cairo',sans-serif}
+body{margin:0;min-height:100vh;background:linear-gradient(135deg,#0d47a1,#1976d2)}
+.wrap{max-width:900px;margin:0 auto;padding:18px 14px 40px}
+.top{background:#fff;border-radius:16px;padding:16px;box-shadow:0 15px 40px rgba(0,0,0,.18);text-align:center}
+.school{font-size:20px;font-weight:700;color:#0d47a1;margin:0}
+.title{font-size:18px;font-weight:600;margin-top:6px;color:#333}
+.card{margin-top:14px;background:#fff;border-radius:16px;padding:14px;box-shadow:0 15px 40px rgba(0,0,0,.18)}
+.grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:700px){.grid{grid-template-columns:1fr 1fr}}
+label{font-size:13px;color:#333}
+select,input,textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:14px}
+textarea{min-height:90px}
+.btnRow{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.btn{border:0;border-radius:12px;padding:12px 16px;font-size:15px;cursor:pointer}
+.btn-primary{background:#1976d2;color:#fff}
+.btn-primary:hover{background:#0d47a1}
+.btn-muted{background:#eee}
+.msg{margin-top:10px;color:#b71c1c;min-height:18px}
+.footer{text-align:center;margin-top:16px;color:#e8e8e8}
+@media print{.footer{color:#333}}
+</style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="top">
-      <p class="school">مدارس الفلاح الأهلية</p>
-      <p class="title">صفحة المعلم - بيانات الزيارة</p>
-      <div style="margin-top:10px">
-        <a href="index.html" style="color:#1976d2;text-decoration:none;font-weight:700">الصفحة الرئيسية</a>
-      </div>
-    </div>
+<div class="wrap">
 
-    <div class="card">
-      <div class="grid">
-
-        <!-- ✔️ اليوم والتاريخ (إضافة فقط) -->
-        <div>
-          <label>يوم الزيارة</label>
-          <select id="visitDay">
-            <option value="" disabled selected>اختر اليوم</option>
-            <option>الأحد</option>
-            <option>الاثنين</option>
-            <option>الثلاثاء</option>
-            <option>الأربعاء</option>
-            <option>الخميس</option>
-          </select>
-        </div>
-
-        <div>
-          <label>تاريخ الزيارة</label>
-          <input type="date" id="visitDate" />
-        </div>
-        <!-- نهاية الإضافة -->
-
-        <div>
-          <label>المعلم الزائر</label>
-          <select id="visitorTeacher"></select>
-        </div>
-        <div>
-          <label>المعلم المُزار</label>
-          <select id="visitedTeacher"></select>
-        </div>
-
-        <div>
-          <label>الحصة</label>
-          <select id="period"></select>
-        </div>
-        <div>
-          <label>الفصل</label>
-          <select id="className"></select>
-        </div>
-
-        <div>
-          <label>المادة</label>
-          <select id="subject"></select>
-        </div>
-        <div id="otherSubWrap" style="display:none">
-          <label>اسم المادة (أخرى)</label>
-          <input id="subjectOther" />
-        </div>
-
-        <div style="grid-column:1/-1">
-          <label>عنوان الدرس</label>
-          <input id="lessonTitle" />
-        </div>
-
-        <div style="grid-column:1/-1">
-          <label>الهدف</label>
-          <textarea id="objective"></textarea>
-        </div>
-      </div>
-
-      <div class="btnRow">
-        <button class="btn btn-muted" onclick="location.href='index.html'">رجوع</button>
-        <button class="btn btn-primary" id="startBtn">بدء نموذج الزيارة</button>
-      </div>
-
-      <div class="msg" id="msg"></div>
-    </div>
-
-    <div class="footer">تصميم محمد عامر أحمد</div>
+  <div class="top">
+    <p class="school">مدارس الفلاح الأهلية</p>
+    <p class="title">صفحة المعلم – بيانات الزيارة</p>
+    <a href="index.html" style="font-weight:700;color:#1976d2;text-decoration:none">الصفحة الرئيسية</a>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-    import {
-      getFirestore, collection, getDocs, query, where, orderBy, addDoc
-    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+  <div class="card">
+    <div class="grid">
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
-      authDomain: "visit-2026.firebaseapp.com",
-      projectId: "visit-2026",
-      storageBucket: "visit-2026.firebasestorage.app",
-      messagingSenderId: "355064530699",
-      appId: "1:355064530699:web:26ad1710ff493c76ce840e"
-    };
+      <div>
+        <label>يوم الزيارة</label>
+        <select id="visitDay">
+          <option value="">اختر اليوم</option>
+          <option>الأحد</option>
+          <option>الاثنين</option>
+          <option>الثلاثاء</option>
+          <option>الأربعاء</option>
+          <option>الخميس</option>
+        </select>
+      </div>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+      <div>
+        <label>تاريخ الزيارة</label>
+        <input type="date" id="visitDate">
+      </div>
 
-    const visitorTeacher = document.getElementById("visitorTeacher");
-    const visitedTeacher = document.getElementById("visitedTeacher");
-    const period = document.getElementById("period");
-    const className = document.getElementById("className");
-    const subject = document.getElementById("subject");
-    const otherSubWrap = document.getElementById("otherSubWrap");
-    const subjectOther = document.getElementById("subjectOther");
-    const lessonTitle = document.getElementById("lessonTitle");
-    const objective = document.getElementById("objective");
-    const visitDay = document.getElementById("visitDay");
-    const visitDate = document.getElementById("visitDate");
-    const msg = document.getElementById("msg");
+      <div>
+        <label>المعلم الزائر</label>
+        <select id="visitorTeacher"></select>
+      </div>
 
-    function formatDate(dateStr){
-      const d = new Date(dateStr);
-      const day = String(d.getDate()).padStart(2,"0");
-      const month = String(d.getMonth()+1).padStart(2,"0");
-      const year = d.getFullYear();
-      return `${day} / ${month} / ${year}`;
-    }
+      <div>
+        <label>المعلم المُزار</label>
+        <select id="visitedTeacher"></select>
+      </div>
 
-    function fillPeriods(){
-      period.innerHTML = "";
-      const items = ["الحصة الأولى","الحصة الثانية","الحصة الثالثة","الحصة الرابعة","الحصة الخامسة","الحصة السادسة","الحصة السابعة","الحصة الثامنة"];
-      items.forEach((t,i)=>{
-        const o=document.createElement("option");
-        o.value=String(i+1);
-        o.textContent=t;
-        period.appendChild(o);
-      });
-    }
+      <div>
+        <label>الحصة</label>
+        <select id="period"></select>
+      </div>
 
-    function addDefaultOption(sel, text){
-      const o = document.createElement("option");
-      o.value = "";
-      o.textContent = text;
-      o.disabled = true;
-      o.selected = true;
-      sel.appendChild(o);
-    }
+      <div>
+        <label>الفصل</label>
+        <select id="className"></select>
+      </div>
 
-    async function loadTeachers(){
-  const q1 = query(
-    collection(db,"teachers"),
-    where("active","==",true)
-  );
+      <div>
+        <label>المادة</label>
+        <select id="subject"></select>
+      </div>
 
-  const res = await getDocs(q1);
+      <div id="otherWrap" style="display:none">
+        <label>اسم المادة (أخرى)</label>
+        <input id="subjectOther">
+      </div>
 
-  visitorTeacher.innerHTML = "";
-  visitedTeacher.innerHTML = "";
-  addDefaultOption(visitorTeacher, "اختر المعلم الزائر");
-  addDefaultOption(visitedTeacher, "اختر المعلم المُزار");
+      <div style="grid-column:1/-1">
+        <label>عنوان الدرس</label>
+        <input id="lessonTitle">
+      </div>
 
-  res.forEach(d=>{
-    const data = d.data();
+      <div style="grid-column:1/-1">
+        <label>الهدف</label>
+        <textarea id="objective"></textarea>
+      </div>
 
-    const o1 = document.createElement("option");
-    o1.value = d.id;
-    o1.textContent = data.name || "";
-    visitorTeacher.appendChild(o1);
+    </div>
 
-    const o2 = document.createElement("option");
-    o2.value = d.id;
-    o2.textContent = data.name || "";
-    visitedTeacher.appendChild(o2);
+    <div class="btnRow">
+      <button class="btn btn-muted" onclick="location.href='index.html'">رجوع</button>
+      <button class="btn btn-primary" id="startBtn">بدء نموذج الزيارة</button>
+    </div>
+
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <div class="footer">تصميم محمد عامر أحمد</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getFirestore, collection, getDocs, query, where, addDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
+  authDomain: "visit-2026.firebaseapp.com",
+  projectId: "visit-2026"
+});
+
+const db = getFirestore(app);
+
+const visitorTeacher = document.getElementById("visitorTeacher");
+const visitedTeacher = document.getElementById("visitedTeacher");
+const className = document.getElementById("className");
+const subject = document.getElementById("subject");
+const period = document.getElementById("period");
+const otherWrap = document.getElementById("otherWrap");
+const subjectOther = document.getElementById("subjectOther");
+const msg = document.getElementById("msg");
+
+function addDefault(sel,text){
+  sel.innerHTML="";
+  const o=document.createElement("option");
+  o.value="";o.textContent=text;
+  sel.appendChild(o);
+}
+
+function fillPeriods(){
+  addDefault(period,"اختر الحصة");
+  ["الأولى","الثانية","الثالثة","الرابعة","الخامسة","السادسة","السابعة","الثامنة"]
+  .forEach((t,i)=>{
+    const o=document.createElement("option");
+    o.value=i+1;o.textContent="الحصة "+t;
+    period.appendChild(o);
   });
 }
 
-
-
-      visitorTeacher.innerHTML = "";
-      visitedTeacher.innerHTML = "";
-      addDefaultOption(visitorTeacher, "اختر المعلم الزائر");
-      addDefaultOption(visitedTeacher, "اختر المعلم المُزار");
-
-      res.forEach(d=>{
-        const data=d.data();
-        const o1=document.createElement("option");
-        o1.value=d.id;
-        o1.textContent=data.name || "";
-        visitorTeacher.appendChild(o1);
-
-        const o2=document.createElement("option");
-        o2.value=d.id;
-        o2.textContent=data.name || "";
-        visitedTeacher.appendChild(o2);
-      });
-    }
-
-  async function loadClasses(){
-  const q1 = query(
-    collection(db,"classes"),
-    where("active","==",true)
-  );
-
-  const res = await getDocs(q1);
-
-  className.innerHTML = "";
-  addDefaultOption(className, "اختر الفصل");
-
+async function loadSelect(col,sel,placeholder){
+  addDefault(sel,placeholder);
+  const res = await getDocs(query(collection(db,col),where("active","==",true)));
   res.forEach(d=>{
-    const data = d.data();
-    const o = document.createElement("option");
-    o.value = d.id;
-    o.textContent = data.name || "";
-    className.appendChild(o);
+    const o=document.createElement("option");
+    o.value=d.id;o.textContent=d.data().name||"";
+    sel.appendChild(o);
   });
 }
 
+subject.onchange=()=>otherWrap.style.display=subject.value==="__other__"?"block":"none";
 
-
-      className.innerHTML = "";
-      addDefaultOption(className, "اختر الفصل");
-      res.forEach(d=>{
-        const data=d.data();
-        const o=document.createElement("option");
-        o.value=d.id;
-        o.textContent=data.name || "";
-        className.appendChild(o);
-      });
-    }
-
-async function loadSubjects(){
-  const q1 = query(
-    collection(db,"subjects"),
-    where("active","==",true)
-  );
-
-  const res = await getDocs(q1);
-
-  subject.innerHTML = "";
-  addDefaultOption(subject, "اختر المادة");
-
-  res.forEach(d=>{
-    const data = d.data();
-    const o = document.createElement("option");
-    o.value = d.id;
-    o.textContent = data.name || "";
-    subject.appendChild(o);
+document.getElementById("startBtn").onclick=async()=>{
+  msg.textContent="";
+  if(!visitorTeacher.value||!visitedTeacher.value||!period.value||!className.value||!subject.value){
+    msg.textContent="يرجى استكمال جميع الحقول";
+    return;
+  }
+  await addDoc(collection(db,"visits"),{
+    visitDay:visitDay.value,
+    visitDate:visitDate.value,
+    visitorTeacherId:visitorTeacher.value,
+    visitedTeacherId:visitedTeacher.value,
+    period:period.value,
+    classId:className.value,
+    subjectText:subject.value==="__other__"?subjectOther.value:subject.options[subject.selectedIndex].textContent,
+    lessonTitle:lessonTitle.value,
+    objective:objective.value,
+    createdAt:Date.now(),
+    status:"header_saved"
   });
+  location.href="visit-form.html";
+};
 
-  const other = document.createElement("option");
-  other.value = "__other__";
-  other.textContent = "أخرى";
-  subject.appendChild(other);
-}
+fillPeriods();
+loadSelect("teachers",visitorTeacher,"اختر المعلم الزائر");
+loadSelect("teachers",visitedTeacher,"اختر المعلم المُزار");
+loadSelect("classes",className,"اختر الفصل");
+loadSelect("subjects",subject,"اختر المادة");
 
+const o=document.createElement("option");
+o.value="__other__";o.textContent="أخرى";
+subject.appendChild(o);
+</script>
 
-      subject.innerHTML = "";
-      addDefaultOption(subject, "اختر المادة");
-      res.forEach(d=>{
-        const data=d.data();
-        const o=document.createElement("option");
-        o.value=d.id;
-        o.textContent=data.name || "";
-        subject.appendChild(o);
-      });
-
-      const other = document.createElement("option");
-      other.value = "__other__";
-      other.textContent = "أخرى";
-      subject.appendChild(other);
-    }
-
-    subject.onchange = () => {
-      if(subject.value === "__other__"){
-        otherSubWrap.style.display = "block";
-      }else{
-        otherSubWrap.style.display = "none";
-        subjectOther.value = "";
-      }
-    };
-
-    function validate(){
-      msg.textContent = "";
-      if(!visitDay.value){ msg.textContent="اختر يوم الزيارة"; return false; }
-      if(!visitDate.value){ msg.textContent="اختر تاريخ الزيارة"; return false; }
-      if(!visitorTeacher.value || !visitedTeacher.value){ msg.textContent="اختر المعلم الزائر والمعلم المُزار"; return false; }
-      if(visitorTeacher.value === visitedTeacher.value){ msg.textContent="لا يمكن اختيار نفس المعلم في الخانتين"; return false; }
-      if(!period.value){ msg.textContent="اختر الحصة"; return false; }
-      if(!className.value){ msg.textContent="اختر الفصل"; return false; }
-      if(!subject.value){ msg.textContent="اختر المادة"; return false; }
-      if(subject.value === "__other__" && !(subjectOther.value||"").trim()){ msg.textContent="اكتب اسم المادة"; return false; }
-      if(!(lessonTitle.value||"").trim()){ msg.textContent="اكتب عنوان الدرس"; return false; }
-      if(!(objective.value||"").trim()){ msg.textContent="اكتب الهدف"; return false; }
-      return true;
-    }
-
-    document.getElementById("startBtn").onclick = async () => {
-      try{
-        if(!validate()) return;
-
-        const subjectText = (subject.value === "__other__") ? subjectOther.value.trim() : subject.options[subject.selectedIndex].textContent;
-        const visitorName = visitorTeacher.options[visitorTeacher.selectedIndex].textContent;
-        const visitedName = visitedTeacher.options[visitedTeacher.selectedIndex].textContent;
-        const classText = className.options[className.selectedIndex].textContent;
-
-        const ref = await addDoc(collection(db,"visits"), {
-          visitDay: visitDay.value,
-          visitDate: visitDate.value,
-          visitDateText: formatDate(visitDate.value),
-
-          visitorTeacherId: visitorTeacher.value,
-          visitorTeacherName: visitorName,
-          visitedTeacherId: visitedTeacher.value,
-          visitedTeacherName: visitedName,
-          period: Number(period.value),
-          periodText: period.options[period.selectedIndex].textContent,
-          classId: className.value,
-          classText,
-          subjectId: (subject.value === "__other__") ? null : subject.value,
-          subjectText,
-          lessonTitle: lessonTitle.value.trim(),
-          objective: objective.value.trim(),
-          formAnswers: {},
-          status: "header_saved",
-          createdAt: Date.now()
-        });
-
-        sessionStorage.setItem("currentVisitId", ref.id);
-        window.location.href = "visit-form.html";
-      }catch(e){
-        msg.textContent = "حدث خطأ أثناء الحفظ";
-      }
-    };
-
-    fillPeriods();
-loadTeachers();
-loadClasses();
-loadSubjects();
-
-  </script>
 </body>
 </html>
