@@ -4,39 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>نظام تبادل الزيارات - مدارس الفلاح الأهلية</title>
-
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-
   <style>
     *{box-sizing:border-box;font-family:'Cairo',sans-serif}
-    body{
-      margin:0;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:linear-gradient(135deg,#0d47a1,#1976d2)
-    }
-    .container{
-      width:92%;
-      max-width:560px;
-      background:#fff;
-      border-radius:18px;
-      padding:34px 26px;
-      text-align:center;
-      box-shadow:0 15px 40px rgba(0,0,0,.25)
-    }
+    body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0d47a1,#1976d2)}
+    .container{width:92%;max-width:560px;background:#fff;border-radius:18px;padding:34px 26px;text-align:center;box-shadow:0 15px 40px rgba(0,0,0,.25)}
     .school{font-size:22px;font-weight:700;color:#0d47a1;margin-bottom:6px}
     .system{font-size:20px;font-weight:600;color:#333;margin-bottom:22px}
     .btns{display:flex;flex-direction:column;gap:12px;margin:18px 0 10px}
-    button{
-      border:0;
-      border-radius:12px;
-      padding:14px 16px;
-      font-size:16px;
-      cursor:pointer;
-      transition:.25s
-    }
+    button{border:0;border-radius:12px;padding:14px 16px;font-size:16px;cursor:pointer;transition:.25s}
     .b-super{background:#e53935;color:#fff}
     .b-super:hover{background:#b71c1c}
     .b-admin{background:#2e7d32;color:#fff}
@@ -44,41 +20,16 @@
     .b-general{background:#1976d2;color:#fff}
     .b-general:hover{background:#0d47a1}
     .footer{margin-top:14px;font-size:14px;color:#666}
-
-    .modal{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.45);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:16px
-    }
-    .card{
-      width:100%;
-      max-width:520px;
-      background:#fff;
-      border-radius:16px;
-      padding:18px 16px;
-      box-shadow:0 15px 40px rgba(0,0,0,.25);
-      text-align:right
-    }
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:16px}
+    .card{width:100%;max-width:520px;background:#fff;border-radius:16px;padding:18px 16px;box-shadow:0 15px 40px rgba(0,0,0,.25);text-align:right}
     .card h3{margin:0 0 10px;font-size:18px;color:#0d47a1}
     .row{display:flex;flex-direction:column;gap:8px;margin:10px 0}
     label{font-size:14px;color:#333}
-    input{
-      width:100%;
-      padding:12px;
-      border:1px solid #ddd;
-      border-radius:10px;
-      font-size:15px
-    }
+    input{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:15px}
     .actions{display:flex;gap:10px;margin-top:12px}
     .actions button{flex:1}
     .b-cancel{background:#eee;color:#333}
     .b-submit{background:#1976d2;color:#fff}
-    .b-submit:hover{background:#0d47a1}
-    .hint{font-size:13px;color:#666;margin-top:6px}
     .msg{margin-top:10px;font-size:14px;color:#b71c1c;min-height:18px}
   </style>
 </head>
@@ -99,7 +50,7 @@
 
 <div class="modal" id="modal">
   <div class="card">
-    <h3 id="modalTitle">تسجيل الدخول</h3>
+    <h3 id="title"></h3>
 
     <div class="row">
       <label>اسم المستخدم</label>
@@ -113,119 +64,78 @@
 
     <div class="actions">
       <button class="b-cancel" onclick="closeModal()">إلغاء</button>
-      <button class="b-submit" id="btnLogin">دخول</button>
+      <button class="b-submit" id="loginBtn">دخول</button>
     </div>
 
-    <div class="hint" id="hint"></div>
     <div class="msg" id="msg"></div>
   </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import {
-  getFirestore, doc, getDoc, setDoc,
-  collection, getDocs, query, where, limit
-} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, limit } 
+from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-const app = initializeApp({
+const firebaseConfig = {
   apiKey: "AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
   authDomain: "visit-2026.firebaseapp.com",
-  projectId: "visit-2026"
-});
+  projectId: "visit-2026",
+};
+const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const modal = document.getElementById("modal");
-const modalTitle = document.getElementById("modalTitle");
-const usernameEl = document.getElementById("username");
-const passwordEl = document.getElementById("password");
+const title = document.getElementById("title");
 const msg = document.getElementById("msg");
-const hint = document.getElementById("hint");
-const btnLogin = document.getElementById("btnLogin");
+const u = document.getElementById("username");
+const p = document.getElementById("password");
+const btn = document.getElementById("loginBtn");
 
 window.closeModal = ()=> modal.style.display="none";
 
-window.openSupervisor = ()=>{
-  modalTitle.textContent="دخول المشرف";
-  hint.textContent="";
-  msg.textContent="";
-  usernameEl.value="";
-  passwordEl.value="";
+window.openAdmin = async ()=>{
+  title.textContent="دخول الأدمن";
   modal.style.display="flex";
-  btnLogin.onclick=loginSupervisor;
+  btn.onclick = async ()=>{
+    const ref = doc(db,"admins","main");
+    const s = await getDoc(ref);
+    if(!s.exists()) await setDoc(ref,{username:"admin",password:"admin123"});
+    const d = (await getDoc(ref)).data();
+    if(u.value==="admin" && p.value===d.password){
+      sessionStorage.setItem("role","admin");
+      window.location.href="admin-dashboard.html";
+    } else msg.textContent="بيانات غير صحيحة";
+  }
 };
 
-window.openAdmin = async ()=>{
-  modalTitle.textContent="دخول الأدمن";
-  hint.textContent="اسم المستخدم ثابت: admin";
-  msg.textContent="";
-  usernameEl.value="admin";
-  passwordEl.value="";
+window.openSupervisor = ()=>{
+  title.textContent="دخول المشرف";
   modal.style.display="flex";
-  btnLogin.onclick=loginAdmin;
-
-  const ref=doc(db,"admins","main");
-  if(!(await getDoc(ref)).exists()){
-    await setDoc(ref,{username:"admin",password:"admin123"});
+  btn.onclick = async ()=>{
+    const q = query(collection(db,"supervisors"),where("username","==",u.value),where("active","==",true),limit(1));
+    const r = await getDocs(q);
+    if(r.empty){msg.textContent="بيانات غير صحيحة";return;}
+    const d = r.docs[0].data();
+    if(d.password!==p.value){msg.textContent="بيانات غير صحيحة";return;}
+    sessionStorage.setItem("role","supervisor");
+    window.location.href="supervisor-dashboard.html";
   }
 };
 
 window.openGeneral = async ()=>{
-  modalTitle.textContent="دخول المشرف العام";
-  hint.textContent="";
-  msg.textContent="";
-  usernameEl.value="";
-  passwordEl.value="";
+  title.textContent="دخول المشرف العام";
   modal.style.display="flex";
-  btnLogin.onclick=loginGeneral;
-
-  const ref=doc(db,"general_supervisors","main");
-  if(!(await getDoc(ref)).exists()){
-    await setDoc(ref,{username:"general",password:"9665"});
+  const ref = doc(db,"general_supervisor","main");
+  const s = await getDoc(ref);
+  if(!s.exists()) await setDoc(ref,{username:"general",password:"9665"});
+  btn.onclick = async ()=>{
+    const d = (await getDoc(ref)).data();
+    if(u.value===d.username && p.value===d.password){
+      sessionStorage.setItem("role","general");
+      window.location.href="general-dashboard.html";
+    } else msg.textContent="بيانات غير صحيحة";
   }
 };
-
-async function loginAdmin(){
-  const u=usernameEl.value.trim();
-  const p=passwordEl.value.trim();
-  const snap=await getDoc(doc(db,"admins","main"));
-  if(!snap.exists()||snap.data().password!==p){
-    msg.textContent="بيانات الدخول غير صحيحة";return;
-  }
-  sessionStorage.setItem("role","admin");
-  closeModal();
-  location.href="admin-dashboard.html";
-}
-
-async function loginSupervisor(){
-  const u=usernameEl.value.trim();
-  const p=passwordEl.value.trim();
-  const q=query(collection(db,"supervisors"),
-    where("username","==",u),
-    where("active","==",true),
-    limit(1)
-  );
-  const r=await getDocs(q);
-  if(r.empty||r.docs[0].data().password!==p){
-    msg.textContent="بيانات الدخول غير صحيحة";return;
-  }
-  sessionStorage.setItem("role","supervisor");
-  sessionStorage.setItem("supervisorId",r.docs[0].id);
-  closeModal();
-  location.href="supervisor-dashboard.html";
-}
-
-async function loginGeneral(){
-  const u=usernameEl.value.trim();
-  const p=passwordEl.value.trim();
-  const snap=await getDoc(doc(db,"general_supervisors","main"));
-  if(!snap.exists()||snap.data().password!==p){
-    msg.textContent="بيانات الدخول غير صحيحة";return;
-  }
-  sessionStorage.setItem("role","general_supervisor");
-  closeModal();
-  location.href="general-supervisor.html";
-}
 </script>
 
 </body>
