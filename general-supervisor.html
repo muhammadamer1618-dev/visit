@@ -9,36 +9,65 @@
 
 <style>
 *{box-sizing:border-box;font-family:'Cairo',sans-serif}
-body{margin:0;background:#f4f6fb}
-.wrap{max-width:1100px;margin:20px auto;padding:10px}
-.card{background:#fff;border-radius:16px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.1)}
-h2{margin:0 0 10px;color:#0d47a1}
-.row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-input,button{padding:10px;border-radius:10px;border:1px solid #ddd;font-size:14px}
-button{cursor:pointer}
-.btn{background:#1976d2;color:#fff;border:0}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{border:1px solid #eee;padding:8px;text-align:center}
-th{background:#f0f3ff}
-.actions button{margin:0 2px}
-.msg{margin-top:10px;color:#b71c1c}
+body{margin:0;background:linear-gradient(135deg,#0d47a1,#1976d2);min-height:100vh}
+.wrap{max-width:1200px;margin:0 auto;padding:20px}
+.card{background:#fff;border-radius:16px;padding:16px;box-shadow:0 15px 40px rgba(0,0,0,.2)}
+h2{text-align:center;color:#0d47a1;margin-top:0}
+
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:14px}
+label{font-size:14px;font-weight:700}
+input{padding:10px;border-radius:10px;border:1px solid #ccc;font-size:14px}
+
+.btn{background:#1976d2;color:#fff;border:0;padding:10px 16px;border-radius:10px;cursor:pointer}
+.btn:hover{background:#0d47a1}
+.btn-print{background:#2e7d32}
+.btn-print:hover{background:#1b5e20}
+
+table{width:100%;border-collapse:collapse;margin-top:14px}
+th,td{border:1px solid #ccc;padding:8px;text-align:center;font-size:14px}
+th{background:#f4f4f4}
+
+.login{max-width:420px;margin:80px auto}
+.msg{color:#b71c1c;margin-top:8px;text-align:center}
+
+.footer{text-align:center;margin-top:16px;color:#666}
 </style>
 </head>
 
 <body>
-<div class="wrap">
+
+<!-- LOGIN -->
+<div class="wrap" id="loginBox">
+  <div class="card login">
+    <h2>دخول المشرف العام</h2>
+
+    <label>اسم المستخدم</label>
+    <input id="user" value="general">
+
+    <br><br>
+    <label>كلمة المرور</label>
+    <input id="pass" type="password">
+
+    <br><br>
+    <button class="btn" onclick="login()">دخول</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="wrap" id="dashboard" style="display:none">
   <div class="card">
-    <h2>أرشيف الزيارات – المشرف العام</h2>
+    <h2>أرشيف الزيارات اليومية</h2>
 
     <div class="row">
-      <input type="date" id="visitDate">
-      <button class="btn" onclick="loadVisits()">عرض زيارات اليوم</button>
-      <button onclick="logout()">خروج</button>
+      <div>
+        <label>اختر التاريخ</label><br>
+        <input type="date" id="visitDate">
+      </div>
+      <button class="btn" onclick="loadVisits()">عرض الزيارات</button>
     </div>
 
-    <div class="msg" id="msg"></div>
-
-    <table id="tbl" style="display:none">
+    <table>
       <thead>
         <tr>
           <th>التاريخ</th>
@@ -47,12 +76,15 @@ th{background:#f0f3ff}
           <th>المعلم المُزار</th>
           <th>الفصل</th>
           <th>الحصة</th>
-          <th>إجراءات</th>
+          <th>عرض</th>
+          <th>طباعة</th>
         </tr>
       </thead>
-      <tbody id="body"></tbody>
+      <tbody id="rows"></tbody>
     </table>
   </div>
+
+  <div class="footer">مدارس الفلاح الأهلية – المشرف العام</div>
 </div>
 
 <script type="module">
@@ -67,63 +99,50 @@ const app = initializeApp({
 });
 const db = getFirestore(app);
 
-if(sessionStorage.getItem("role")!=="general_supervisor"){
-  location.href="index.html";
-}
+/* LOGIN */
+function login(){
+  const u = document.getElementById("user").value.trim();
+  const p = document.getElementById("pass").value.trim();
 
-window.logout = ()=>{
-  sessionStorage.clear();
-  location.href="index.html";
-};
-
-window.loadVisits = async ()=>{
-  const d = document.getElementById("visitDate").value;
-  const msg = document.getElementById("msg");
-  const tbl = document.getElementById("tbl");
-  const body = document.getElementById("body");
-
-  body.innerHTML="";
-  msg.textContent="";
-  tbl.style.display="none";
-
-  if(!d){ msg.textContent="اختر التاريخ"; return; }
-
-  const res = await getDocs(
-    query(collection(db,"visits"), where("visitDate","==",d))
-  );
-
-  if(res.empty){
-    msg.textContent="لا توجد زيارات في هذا اليوم";
-    return;
+  if(u === "general" && p === "9665"){
+    document.getElementById("loginBox").style.display="none";
+    document.getElementById("dashboard").style.display="block";
+  }else{
+    document.getElementById("loginMsg").textContent="بيانات الدخول غير صحيحة";
   }
+}
+window.login = login;
 
-  res.forEach(v=>{
-    const r=v.data();
-    const tr=document.createElement("tr");
-    tr.innerHTML=`
-      <td>${r.visitDate}</td>
-      <td>${r.visitDay}</td>
-      <td>${r.visitorTeacherName}</td>
-      <td>${r.visitedTeacherName}</td>
-      <td>${r.classText}</td>
-      <td>${r.periodText}</td>
-      <td class="actions">
-        <button onclick="view('${v.id}')">عرض</button>
-        <button onclick="printVisit('${v.id}')">طباعة</button>
-      </td>
+/* LOAD VISITS */
+async function loadVisits(){
+  const d = document.getElementById("visitDate").value;
+  if(!d) return;
+
+  const tbody = document.getElementById("rows");
+  tbody.innerHTML="";
+
+  const q = query(collection(db,"visits"), where("visitDate","==",d));
+  const res = await getDocs(q);
+
+  res.forEach(doc=>{
+    const v = doc.data();
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${v.visitDate || ""}</td>
+      <td>${v.visitDay || ""}</td>
+      <td>${v.visitorTeacherName || ""}</td>
+      <td>${v.visitedTeacherName || ""}</td>
+      <td>${v.classText || ""}</td>
+      <td>${v.periodText || ""}</td>
+      <td><button class="btn" onclick="window.open('visit-view.html?id=${doc.id}','_blank')">عرض</button></td>
+      <td><button class="btn btn-print" onclick="window.open('visit-print.html?id=${doc.id}','_blank')">طباعة</button></td>
     `;
-    body.appendChild(tr);
+    tbody.appendChild(tr);
   });
-
-  tbl.style.display="table";
-};
-
-window.view = id=>{
-  window.open("visit-view.html?id="+id,"_blank");
-};
-window.printVisit = id=>{
-  window.open("visit-print.html?id="+id,"_blank");
-};
+}
+window.loadVisits = loadVisits;
 </script>
+
 </body>
 </html>
