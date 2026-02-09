@@ -224,6 +224,24 @@
       ]);
     }
 
+    // ✅ إضافة: إرسال رابط المعلم واتساب (باسم المعلم + اسم المدرسة + توقيعك)
+    function sendTeacherLinkWhatsApp(teacherId, teacherName){
+      const link = `${location.origin}/teacher-form.html?tid=${teacherId}`;
+      const message = `
+السلام عليكم ${teacherName}
+هذا رابط نموذج تبادل الزيارات الخاص بك:
+${link}
+
+يرجى الاحتفاظ بالرابط واستخدامه عند كل زيارة.
+
+مدارس الفلاح الأهلية
+تصميم محمد عامر أحمد
+      `.trim();
+
+      const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+      window.open(url, "_blank");
+    }
+
     document.getElementById("addSupervisorBtn").onclick = async () => {
       const name = (supName.value || "").trim();
       const username = (supUser.value || "").trim();
@@ -365,6 +383,14 @@
           await renderTeachers();
         };
 
+        // ✅ إضافة: زر إرسال الرابط واتساب (أخضر)
+        const btnSend = document.createElement("button");
+        btnSend.className = "btn btn-green";
+        btnSend.textContent = "إرسال الرابط واتساب";
+        btnSend.onclick = () => {
+          sendTeacherLinkWhatsApp(d.id, data.name || "");
+        };
+
         const btnDisable = document.createElement("button");
         btnDisable.className = "btn btn-danger";
         btnDisable.textContent = "تعطيل";
@@ -376,6 +402,7 @@
         };
 
         actions.appendChild(btnEdit);
+        actions.appendChild(btnSend);
         actions.appendChild(btnDisable);
 
         el.appendChild(meta);
