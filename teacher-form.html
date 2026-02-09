@@ -40,6 +40,26 @@
 
     <div class="card">
       <div class="grid">
+
+        <!-- ✔️ اليوم والتاريخ (إضافة فقط) -->
+        <div>
+          <label>يوم الزيارة</label>
+          <select id="visitDay">
+            <option value="" disabled selected>اختر اليوم</option>
+            <option>الأحد</option>
+            <option>الاثنين</option>
+            <option>الثلاثاء</option>
+            <option>الأربعاء</option>
+            <option>الخميس</option>
+          </select>
+        </div>
+
+        <div>
+          <label>تاريخ الزيارة</label>
+          <input type="date" id="visitDate" />
+        </div>
+        <!-- نهاية الإضافة -->
+
         <div>
           <label>المعلم الزائر</label>
           <select id="visitorTeacher"></select>
@@ -116,7 +136,17 @@
     const subjectOther = document.getElementById("subjectOther");
     const lessonTitle = document.getElementById("lessonTitle");
     const objective = document.getElementById("objective");
+    const visitDay = document.getElementById("visitDay");
+    const visitDate = document.getElementById("visitDate");
     const msg = document.getElementById("msg");
+
+    function formatDate(dateStr){
+      const d = new Date(dateStr);
+      const day = String(d.getDate()).padStart(2,"0");
+      const month = String(d.getMonth()+1).padStart(2,"0");
+      const year = d.getFullYear();
+      return `${day} / ${month} / ${year}`;
+    }
 
     function fillPeriods(){
       period.innerHTML = "";
@@ -207,6 +237,8 @@
 
     function validate(){
       msg.textContent = "";
+      if(!visitDay.value){ msg.textContent="اختر يوم الزيارة"; return false; }
+      if(!visitDate.value){ msg.textContent="اختر تاريخ الزيارة"; return false; }
       if(!visitorTeacher.value || !visitedTeacher.value){ msg.textContent="اختر المعلم الزائر والمعلم المُزار"; return false; }
       if(visitorTeacher.value === visitedTeacher.value){ msg.textContent="لا يمكن اختيار نفس المعلم في الخانتين"; return false; }
       if(!period.value){ msg.textContent="اختر الحصة"; return false; }
@@ -228,6 +260,10 @@
         const classText = className.options[className.selectedIndex].textContent;
 
         const ref = await addDoc(collection(db,"visits"), {
+          visitDay: visitDay.value,
+          visitDate: visitDate.value,
+          visitDateText: formatDate(visitDate.value),
+
           visitorTeacherId: visitorTeacher.value,
           visitorTeacherName: visitorName,
           visitedTeacherId: visitedTeacher.value,
