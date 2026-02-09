@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>لوحة الأدمن - نظام تبادل الزيارات</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;font-family:'Cairo',sans-serif}
+    body{margin:0;min-height:100vh;background:linear-gradient(135deg,#0d47a1,#1976d2);color:#111}
+    .wrap{max-width:1100px;margin:0 auto;padding:18px 14px 40px}
+    .top{background:#fff;border-radius:16px;padding:16px 14px;box-shadow:0 15px 40px rgba(0,0,0,.18);text-align:center}
+    .school{font-size:20px;font-weight:700;color:#0d47a1;margin:0}
+    .title{font-size:18px;font-weight:600;margin:6px 0 0;color:#333}
+    .grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
+    @media (min-width:900px){.grid{grid-template-columns:1fr 1fr}}
+    .card{background:#fff;border-radius:16px;padding:14px 12px;box-shadow:0 15px 40px rgba(0,0,0,.18)}
+    .card h3{margin:0 0 10px;font-size:16px;color:#0d47a1}
+    .row{display:grid;grid-template-columns:1fr;gap:10px;margin:10px 0}
+    @media (min-width:600px){.row.two{grid-template-columns:1fr 1fr}}
+    label{font-size:13px;color:#333}
+    input{width:100%;padding:11px;border:1px solid #ddd;border-radius:10px;font-size:14px}
+    .btn{border:0;border-radius:10px;padding:11px 12px;font-size:14px;cursor:pointer;transition:.2s}
+    .btn-primary{background:#1976d2;color:#fff}
+    .btn-primary:hover{background:#0d47a1}
+    .btn-danger{background:#e53935;color:#fff}
+    .btn-danger:hover{background:#b71c1c}
+    .btn-muted{background:#eee;color:#333}
+    .btn-green{background:#2e7d32;color:#fff}
+    .btn-green:hover{background:#1b5e20}
+    .list{margin-top:10px;border-top:1px solid #eee;padding-top:10px}
+    .item{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px;border:1px solid #eee;border-radius:12px;margin-bottom:8px}
+    .meta{display:flex;flex-direction:column;gap:3px}
+    .name{font-weight:700;color:#333}
+    .sub{font-size:13px;color:#666}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .footer{margin-top:16px;text-align:center;font-size:14px;color:#e8e8e8}
+    .note{font-size:13px;color:#666;margin-top:6px}
+    .bar{display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+    .bar a{color:#1976d2;text-decoration:none;font-weight:700}
+    .bar a:hover{text-decoration:underline}
+    @media print{
+      body{background:#fff}
+      .footer{color:#333}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <p class="school">مدارس الفلاح الأهلية</p>
+      <p class="title">لوحة الأدمن - نظام تبادل الزيارات</p>
+      <div class="bar">
+        <button class="btn btn-muted" id="logoutBtn">تسجيل خروج</button>
+        <a href="index.html">الصفحة الرئيسية</a>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>إدارة المشرفين</h3>
+
+        <div class="row two">
+          <div>
+            <label>اسم المشرف</label>
+            <input id="supName" />
+          </div>
+          <div>
+            <label>اسم المستخدم</label>
+            <input id="supUser" />
+          </div>
+        </div>
+
+        <div class="row two">
+          <div>
+            <label>كلمة مرور مؤقتة</label>
+            <input id="supPass" type="password" />
+          </div>
+          <div style="display:flex;align-items:end;gap:10px">
+            <button class="btn btn-primary" id="addSupervisorBtn" style="width:100%">إضافة مشرف</button>
+          </div>
+        </div>
+
+        <div class="note">سيُجبر المشرف على تغيير كلمة المرور عند أول دخول.</div>
+
+        <div class="list" id="supervisorsList"></div>
+      </div>
+
+      <div class="card">
+        <h3>إدارة المعلمين</h3>
+
+        <div class="row two">
+          <div>
+            <label>اسم المعلم</label>
+            <input id="tName" />
+          </div>
+          <div style="display:flex;align-items:end;gap:10px">
+            <button class="btn btn-primary" id="addTeacherBtn" style="width:100%">إضافة معلم</button>
+          </div>
+        </div>
+
+        <div class="list" id="teachersList"></div>
+      </div>
+
+      <div class="card">
+        <h3>إدارة المواد</h3>
+
+        <div class="row two">
+          <div>
+            <label>اسم المادة</label>
+            <input id="subName" />
+          </div>
+          <div style="display:flex;align-items:end;gap:10px">
+            <button class="btn btn-primary" id="addSubjectBtn" style="width:100%">إضافة مادة</button>
+          </div>
+        </div>
+
+        <div class="list" id="subjectsList"></div>
+      </div>
+
+      <div class="card">
+        <h3>إدارة الفصول</h3>
+
+        <div class="row two">
+          <div>
+            <label>اسم الفصل</label>
+            <input id="cName" placeholder="مثال: 1/أ" />
+          </div>
+          <div style="display:flex;align-items:end;gap:10px">
+            <button class="btn btn-primary" id="addClassBtn" style="width:100%">إضافة فصل</button>
+          </div>
+        </div>
+
+        <div class="list" id="classesList"></div>
+      </div>
+
+      <div class="card" style="grid-column:1/-1">
+        <h3>تغيير كلمة مرور الأدمن</h3>
+
+        <div class="row two">
+          <div>
+            <label>كلمة المرور الحالية</label>
+            <input id="adminOld" type="password" />
+          </div>
+          <div>
+            <label>كلمة المرور الجديدة</label>
+            <input id="adminNew" type="password" />
+          </div>
+        </div>
+
+        <div class="row two">
+          <div>
+            <label>تأكيد كلمة المرور الجديدة</label>
+            <input id="adminNew2" type="password" />
+          </div>
+          <div style="display:flex;align-items:end;gap:10px">
+            <button class="btn btn-green" id="changeAdminPassBtn" style="width:100%">حفظ كلمة المرور</button>
+          </div>
+        </div>
+
+        <div class="note" id="adminPassMsg" style="min-height:18px"></div>
+      </div>
+    </div>
+
+    <div class="footer">تصميم محمد عامر أحمد</div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import {
+      getFirestore, collection, addDoc, getDocs, query, where, orderBy,
+      doc, updateDoc, getDoc
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
+      authDomain: "visit-2026.firebaseapp.com",
+      projectId: "visit-2026",
+      storageBucket: "visit-2026.firebasestorage.app",
+      messagingSenderId: "355064530699",
+      appId: "1:355064530699:web:26ad1710ff493c76ce840e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    function requireAdmin(){
+      const role = sessionStorage.getItem("role");
+      const adminId = sessionStorage.getItem("adminDocId");
+      if(role !== "admin" || adminId !== "main"){
+        window.location.href = "index.html";
+        return false;
+      }
+      return true;
+    }
+
+    if(!requireAdmin()) {}
+
+    document.getElementById("logoutBtn").onclick = () => {
+      sessionStorage.clear();
+      window.location.href = "index.html";
+    };
+
+    const supName = document.getElementById("supName");
+    const supUser = document.getElementById("supUser");
+    const supPass = document.getElementById("supPass");
+    const supervisorsList = document.getElementById("supervisorsList");
+
+    const tName = document.getElementById("tName");
+    const teachersList = document.getElementById("teachersList");
+
+    const subName = document.getElementById("subName");
+    const subjectsList = document.getElementById("subjectsList");
+
+    const cName = document.getElementById("cName");
+    const classesList = document.getElementById("classesList");
+
+    async function refreshAll(){
+      await Promise.all([
+        renderSupervisors(),
+        renderTeachers(),
+        renderSubjects(),
+        renderClasses()
+      ]);
+    }
+
+    document.getElementById("addSupervisorBtn").onclick = async () => {
+      const name = (supName.value || "").trim();
+      const username = (supUser.value || "").trim();
+      const password = (supPass.value || "").trim();
+      if(!name || !username || !password) return;
+
+      await addDoc(collection(db, "supervisors"), {
+        name, username, password,
+        tempPassword: true,
+        active: true,
+        createdAt: Date.now()
+      });
+
+      supName.value = "";
+      supUser.value = "";
+      supPass.value = "";
+      await renderSupervisors();
+    };
+
+    async function renderSupervisors(){
+      supervisorsList.innerHTML = "";
+      const q = query(collection(db, "supervisors"), orderBy("name"));
+      const res = await getDocs(q);
+
+      res.forEach(d => {
+        const data = d.data();
+        if(data.active !== true) return;
+
+        const el = document.createElement("div");
+        el.className = "item";
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+
+        const nm = document.createElement("div");
+        nm.className = "name";
+        nm.textContent = data.name || "";
+
+        const sb = document.createElement("div");
+        sb.className = "sub";
+        sb.textContent = "اسم المستخدم: " + (data.username || "");
+
+        meta.appendChild(nm);
+        meta.appendChild(sb);
+
+        const actions = document.createElement("div");
+        actions.className = "actions";
+
+        const btnReset = document.createElement("button");
+        btnReset.className = "btn btn-primary";
+        btnReset.textContent = "إعادة تعيين كلمة المرور";
+        btnReset.onclick = async () => {
+          const newPass = prompt("اكتب كلمة مرور مؤقتة جديدة:");
+          if(!newPass) return;
+          const ok = confirm("هل أنت متأكد من إعادة تعيين كلمة المرور؟");
+          if(!ok) return;
+          await updateDoc(doc(db, "supervisors", d.id), {
+            password: newPass,
+            tempPassword: true
+          });
+          await renderSupervisors();
+        };
+
+        const btnEdit = document.createElement("button");
+        btnEdit.className = "btn btn-muted";
+        btnEdit.textContent = "تعديل الاسم/المستخدم";
+        btnEdit.onclick = async () => {
+          const newName = prompt("اسم المشرف:", data.name || "");
+          if(!newName) return;
+          const newUser = prompt("اسم المستخدم:", data.username || "");
+          if(!newUser) return;
+          const ok = confirm("هل أنت متأكد من حفظ التعديل؟");
+          if(!ok) return;
+          await updateDoc(doc(db, "supervisors", d.id), { name: newName.trim(), username: newUser.trim() });
+          await renderSupervisors();
+        };
+
+        const btnDisable = document.createElement("button");
+        btnDisable.className = "btn btn-danger";
+        btnDisable.textContent = "تعطيل";
+        btnDisable.onclick = async () => {
+          const ok = confirm("هل أنت متأكد من تعطيل هذا المشرف؟");
+          if(!ok) return;
+          await updateDoc(doc(db, "supervisors", d.id), { active: false });
+          await renderSupervisors();
+        };
+
+        actions.appendChild(btnReset);
+        actions.appendChild(btnEdit);
+        actions.appendChild(btnDisable);
+
+        el.appendChild(meta);
+        el.appendChild(actions);
+        supervisorsList.appendChild(el);
+      });
+    }
+
+    document.getElementById("addTeacherBtn").onclick = async () => {
+      const name = (tName.value || "").trim();
+      if(!name) return;
+      await addDoc(collection(db, "teachers"), { name, active: true, createdAt: Date.now() });
+      tName.value = "";
+      await renderTeachers();
+    };
+
+    async function renderTeachers(){
+      teachersList.innerHTML = "";
+      const q = query(collection(db, "teachers"), orderBy("name"));
+      const res = await getDocs(q);
+
+      res.forEach(d => {
+        const data = d.data();
+        if(data.active !== true) return;
+
+        const el = document.createElement("div");
+        el.className = "item";
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+
+        const nm = document.createElement("div");
+        nm.className = "name";
+        nm.textContent = data.name || "";
+
+        meta.appendChild(nm);
+
+        const actions = document.createElement("div");
+        actions.className = "actions";
+
+        const btnEdit = document.createElement("button");
+        btnEdit.className = "btn btn-muted";
+        btnEdit.textContent = "تعديل الاسم";
+        btnEdit.onclick = async () => {
+          const newName = prompt("اسم المعلم:", data.name || "");
+          if(!newName) return;
+          const ok = confirm("هل أنت متأكد من حفظ التعديل؟");
+          if(!ok) return;
+          await updateDoc(doc(db, "teachers", d.id), { name: newName.trim() });
+          await renderTeachers();
+        };
+
+        const btnDisable = document.createElement("button");
+        btnDisable.className = "btn btn-danger";
+        btnDisable.textContent = "تعطيل";
+        btnDisable.onclick = async () => {
+          const ok = confirm("هل أنت متأكد من تعطيل هذا المعلم؟");
+          if(!ok) return;
+          await updateDoc(doc(db, "teachers", d.id), { active: false });
+          await renderTeachers();
+        };
+
+        actions.appendChild(btnEdit);
+        actions.appendChild(btnDisable);
+
+        el.appendChild(meta);
+        el.appendChild(actions);
+        teachersList.appendChild(el);
+      });
+    }
+
+    document.getElementById("addSubjectBtn").onclick = async () => {
+      const name = (subName.value || "").trim();
+      if(!name) return;
+      await addDoc(collection(db, "subjects"), { name, active: true, createdAt: Date.now() });
+      subName.value = "";
+      await renderSubjects();
+    };
+
+    async function renderSubjects(){
+      subjectsList.innerHTML = "";
+      const q = query(collection(db, "subjects"), orderBy("name"));
+      const res = await getDocs(q);
+
+      res.forEach(d => {
+        const data = d.data();
+        if(data.active !== true) return;
+
+        const el = document.createElement("div");
+        el.className = "item";
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+
+        const nm = document.createElement("div");
+        nm.className = "name";
+        nm.textContent = data.name || "";
+
+        meta.appendChild(nm);
+
+        const actions = document.createElement("div");
+        actions.className = "actions";
+
+        const btnEdit = document.createElement("button");
+        btnEdit.className = "btn btn-muted";
+        btnEdit.textContent = "تعديل";
+        btnEdit.onclick = async () => {
+          const newName = prompt("اسم المادة:", data.name || "");
+          if(!newName) return;
+          const ok = confirm("هل أنت متأكد من حفظ التعديل؟");
+          if(!ok) return;
+          await updateDoc(doc(db, "subjects", d.id), { name: newName.trim() });
+          await renderSubjects();
+        };
+
+        const btnDisable = document.createElement("button");
+        btnDisable.className = "btn btn-danger";
+        btnDisable.textContent = "تعطيل";
+        btnDisable.onclick = async () => {
+          const ok = confirm("هل أنت متأكد من تعطيل هذه المادة؟");
+          if(!ok) return;
+          await updateDoc(doc(db, "subjects", d.id), { active: false });
+          await renderSubjects();
+        };
+
+        actions.appendChild(btnEdit);
+        actions.appendChild(btnDisable);
+
+        el.appendChild(meta);
+        el.appendChild(actions);
+        subjectsList.appendChild(el);
+      });
+    }
+
+    document.getElementById("addClassBtn").onclick = async () => {
+      const name = (cName.value || "").trim();
+      if(!name) return;
+      await addDoc(collection(db, "classes"), { name, active: true, createdAt: Date.now() });
+      cName.value = "";
+      await renderClasses();
+    };
+
+    async function renderClasses(){
+      classesList.innerHTML = "";
+      const q = query(collection(db, "classes"), orderBy("name"));
+      const res = await getDocs(q);
+
+      res.forEach(d => {
+        const data = d.data();
+        if(data.active !== true) return;
+
+        const el = document.createElement("div");
+        el.className = "item";
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+
+        const nm = document.createElement("div");
+        nm.className = "name";
+        nm.textContent = data.name || "";
+
+        meta.appendChild(nm);
+
+        const actions = document.createElement("div");
+        actions.className = "actions";
+
+        const btnEdit = document.createElement("button");
+        btnEdit.className = "btn btn-muted";
+        btnEdit.textContent = "تعديل";
+        btnEdit.onclick = async () => {
+          const newName = prompt("اسم الفصل:", data.name || "");
+          if(!newName) return;
+          const ok = confirm("هل أنت متأكد من حفظ التعديل؟");
+          if(!ok) return;
+          await updateDoc(doc(db, "classes", d.id), { name: newName.trim() });
+          await renderClasses();
+        };
+
+        const btnDisable = document.createElement("button");
+        btnDisable.className = "btn btn-danger";
+        btnDisable.textContent = "تعطيل";
+        btnDisable.onclick = async () => {
+          const ok = confirm("هل أنت متأكد من تعطيل هذا الفصل؟");
+          if(!ok) return;
+          await updateDoc(doc(db, "classes", d.id), { active: false });
+          await renderClasses();
+        };
+
+        actions.appendChild(btnEdit);
+        actions.appendChild(btnDisable);
+
+        el.appendChild(meta);
+        el.appendChild(actions);
+        classesList.appendChild(el);
+      });
+    }
+
+    document.getElementById("changeAdminPassBtn").onclick = async () => {
+      const msg = document.getElementById("adminPassMsg");
+      msg.style.color = "#b71c1c";
+      msg.textContent = "";
+
+      const oldP = (document.getElementById("adminOld").value || "").trim();
+      const newP = (document.getElementById("adminNew").value || "").trim();
+      const newP2 = (document.getElementById("adminNew2").value || "").trim();
+
+      if(!oldP || !newP || !newP2){ msg.textContent = "أكمل البيانات"; return; }
+      if(newP !== newP2){ msg.textContent = "كلمتا المرور غير متطابقتين"; return; }
+
+      const ref = doc(db, "admins", "main");
+      const snap = await getDoc(ref);
+      if(!snap.exists()){ msg.textContent = "الأدمن غير مهيأ"; return; }
+      const data = snap.data();
+      if(data.password !== oldP){ msg.textContent = "كلمة المرور الحالية غير صحيحة"; return; }
+
+      const ok = confirm("هل أنت متأكد من تغيير كلمة المرور؟");
+      if(!ok) return;
+
+      await updateDoc(ref, { password: newP });
+      document.getElementById("adminOld").value = "";
+      document.getElementById("adminNew").value = "";
+      document.getElementById("adminNew2").value = "";
+      msg.style.color = "#1b5e20";
+      msg.textContent = "تم حفظ كلمة المرور";
+    };
+
+    await refreshAll();
+  </script>
+</body>
+</html>
