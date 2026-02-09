@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>طباعة الزيارة</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;font-family:'Cairo',sans-serif}
+    body{margin:0;background:#fff;color:#111}
+    .page{max-width:900px;margin:0 auto;padding:18px 14px 30px}
+    .head{border:1px solid #ddd;border-radius:14px;padding:12px;text-align:center}
+    .school{font-size:20px;font-weight:800;color:#0d47a1;margin:0}
+    .title{font-size:18px;font-weight:700;margin:6px 0 0}
+    .box{margin-top:12px;border:1px solid #ddd;border-radius:14px;padding:12px}
+    .grid{display:grid;grid-template-columns:1fr;gap:10px}
+    @media (min-width:700px){.grid{grid-template-columns:1fr 1fr}}
+    .k{color:#666;font-size:13px}
+    .v{font-weight:800}
+    .sectionTitle{margin:0 0 8px;color:#0d47a1;font-weight:800}
+    .footerPrint{margin-top:14px;text-align:center;color:#333;font-size:14px}
+    .btns{display:flex;gap:10px;margin-top:12px;justify-content:center}
+    button{border:0;border-radius:10px;padding:10px 12px;cursor:pointer}
+    .b1{background:#1976d2;color:#fff}
+    .b2{background:#eee;color:#333}
+    @media print{
+      .btns{display:none}
+      .page{padding:0}
+      .footerPrint{position:fixed;bottom:10px;left:0;right:0}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="head">
+      <p class="school">مدارس الفلاح الأهلية</p>
+      <p class="title">استمارة تبادل زيارة صفّية</p>
+    </div>
+
+    <div class="btns">
+      <button class="b2" onclick="location.href='supervisor-dashboard.html'">رجوع</button>
+      <button class="b1" onclick="window.print()">طباعة</button>
+    </div>
+
+    <div class="box">
+      <h3 class="sectionTitle">بيانات الزيارة</h3>
+      <div class="grid" id="info"></div>
+    </div>
+
+    <div class="box">
+      <h3 class="sectionTitle">النموذج</h3>
+      <div id="formArea"></div>
+    </div>
+
+    <div class="footerPrint">تصميم محمد عامر أحمد</div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
+      authDomain: "visit-2026.firebaseapp.com",
+      projectId: "visit-2026",
+      storageBucket: "visit-2026.firebasestorage.app",
+      messagingSenderId: "355064530699",
+      appId: "1:355064530699:web:26ad1710ff493c76ce840e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const params = new URLSearchParams(location.search);
+    const id = params.get("id");
+    if(!id){ location.href="supervisor-dashboard.html"; }
+
+    const snap = await getDoc(doc(db,"visits",id));
+    if(!snap.exists()){ location.href="supervisor-dashboard.html"; }
+
+    const data = snap.data();
+    const info = document.getElementById("info");
+
+    function addKV(k,v){
+      const box = document.createElement("div");
+      const kk=document.createElement("div");
+      kk.className="k";
+      kk.textContent=k;
+      const vv=document.createElement("div");
+      vv.className="v";
+      vv.textContent=v || "";
+      box.appendChild(kk);
+      box.appendChild(vv);
+      info.appendChild(box);
+    }
+
+    addKV("المعلم الزائر", data.visitorTeacherName);
+    addKV("المعلم المُزار", data.visitedTeacherName);
+    addKV("الفصل", data.classText);
+    addKV("الحصة", data.periodText);
+    addKV("المادة", data.subjectText);
+    addKV("عنوان الدرس", data.lessonTitle);
+    addKV("الهدف", data.objective);
+
+    const formArea = document.getElementById("formArea");
+    const ans = data.formAnswers || {};
+    if(ans.notes){
+      const p=document.createElement("div");
+      p.style.whiteSpace="pre-wrap";
+      p.textContent = "ملاحظات عامة: " + ans.notes;
+      formArea.appendChild(p);
+    }else{
+      const p=document.createElement("div");
+      p.textContent="سيتم إضافة النموذج المعتمد لاحقًا.";
+      formArea.appendChild(p);
+    }
+  </script>
+</body>
+</html>
