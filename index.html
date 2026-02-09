@@ -129,14 +129,14 @@
 
     if(mode==="admin"){
       if(u==="admin" && p===ADMIN_PASSWORD){
-        window.location.href="admin-dashboard.html";
+        location.assign("./admin-dashboard.html");
         return;
       }
     }
 
     if(mode==="general"){
       if(u==="general" && p===GENERAL_PASSWORD){
-        window.location.href="general-supervisor.html";
+        location.assign("./general-supervisor.html");
         return;
       }
     }
