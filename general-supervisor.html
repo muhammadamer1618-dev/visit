@@ -129,15 +129,27 @@ async function loadVisits(){
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
-      <td>${v.visitDate || ""}</td>
-      <td>${v.visitDay || ""}</td>
-      <td>${v.visitorTeacherName || ""}</td>
-      <td>${v.visitedTeacherName || ""}</td>
-      <td>${v.classText || ""}</td>
-      <td>${v.periodText || ""}</td>
-      <td><button class="btn" onclick="window.open('visit-view.html?id=${doc.id}','_blank')">عرض</button></td>
-      <td><button class="btn btn-print" onclick="window.open('visit-print.html?id=${doc.id}','_blank')">طباعة</button></td>
-    `;
+  <td>${v.visitDate || ""}</td>
+  <td>${v.visitDay || ""}</td>
+  <td>${v.visitorTeacherName || ""}</td>
+  <td>${v.visitedTeacherName || ""}</td>
+  <td>${v.classText || ""}</td>
+  <td>${v.periodText || ""}</td>
+
+  <td>
+    <button class="btn"
+      onclick="window.location.href='visit-view.html?id=${v.id}'">
+      عرض
+    </button>
+  </td>
+
+  <td>
+    <button class="btn btn-print"
+      onclick="window.open('visit-print.html?id=${v.id}')">
+      طباعة
+    </button>
+  </td>
+`;
     tbody.appendChild(tr);
   });
 }
