@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>نموذج الزيارة</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;font-family:'Cairo',sans-serif}
+    body{margin:0;min-height:100vh;background:linear-gradient(135deg,#0d47a1,#1976d2)}
+    .wrap{max-width:900px;margin:0 auto;padding:18px 14px 40px}
+    .top,.card{background:#fff;border-radius:16px;padding:14px 12px;box-shadow:0 15px 40px rgba(0,0,0,.18)}
+    .top{text-align:center}
+    .school{font-size:20px;font-weight:700;color:#0d47a1;margin:0}
+    .title{font-size:18px;font-weight:600;margin:6px 0 0;color:#333}
+    .card{margin-top:14px}
+    .hint{color:#666;font-size:14px;line-height:1.8}
+    label{display:block;margin:10px 0 6px;font-size:13px;color:#333}
+    textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:14px;min-height:110px;resize:vertical}
+    .btnRow{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+    button{border:0;border-radius:12px;padding:12px 14px;font-size:15px;cursor:pointer;transition:.2s}
+    .b1{background:#1976d2;color:#fff}
+    .b1:hover{background:#0d47a1}
+    .b2{background:#eee;color:#333}
+    .msg{margin-top:10px;min-height:18px;font-size:14px;color:#b71c1c}
+    .footer{margin-top:16px;text-align:center;font-size:14px;color:#e8e8e8}
+    @media print{.footer{color:#333}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <p class="school">مدارس الفلاح الأهلية</p>
+      <p class="title">نموذج الزيارة</p>
+    </div>
+
+    <div class="card">
+      <div class="hint">
+        هذه صفحة مؤقتة لحين إضافة النموذج الورقي المعتمد.<br/>
+        حاليًا يمكنك كتابة ملاحظات عامة ثم حفظها.
+      </div>
+
+      <label>ملاحظات عامة</label>
+      <textarea id="notes"></textarea>
+
+      <div class="btnRow">
+        <button class="b2" onclick="location.href='teacher-form.html'">رجوع</button>
+        <button class="b1" id="saveBtn">حفظ وإرسال</button>
+      </div>
+
+      <div class="msg" id="msg"></div>
+    </div>
+
+    <div class="footer">تصميم محمد عامر أحمد</div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
+      authDomain: "visit-2026.firebaseapp.com",
+      projectId: "visit-2026",
+      storageBucket: "visit-2026.firebasestorage.app",
+      messagingSenderId: "355064530699",
+      appId: "1:355064530699:web:26ad1710ff493c76ce840e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const visitId = sessionStorage.getItem("currentVisitId");
+    const msg = document.getElementById("msg");
+    const notes = document.getElementById("notes");
+
+    async function load(){
+      if(!visitId){ location.href="teacher-form.html"; return; }
+      const ref = doc(db,"visits",visitId);
+      const snap = await getDoc(ref);
+      if(!snap.exists()){ location.href="teacher-form.html"; return; }
+      const data = snap.data();
+      notes.value = (data.formAnswers && data.formAnswers.notes) ? data.formAnswers.notes : "";
+    }
+
+    document.getElementById("saveBtn").onclick = async () => {
+      try{
+        msg.textContent = "";
+        const ok = confirm("هل أنت متأكد من حفظ وإرسال الزيارة؟");
+        if(!ok) return;
+
+        const ref = doc(db,"visits",visitId);
+        await updateDoc(ref, {
+          formAnswers: { notes: (notes.value||"").trim() },
+          status: "submitted",
+          submittedAt: Date.now()
+        });
+
+        sessionStorage.removeItem("currentVisitId");
+        msg.style.color = "#1b5e20";
+        msg.textContent = "تم الحفظ والإرسال";
+        setTimeout(()=>location.href="index.html", 700);
+      }catch(e){
+        msg.style.color = "#b71c1c";
+        msg.textContent = "حدث خطأ";
+      }
+    };
+
+    await load();
+  </script>
+</body>
+</html>
