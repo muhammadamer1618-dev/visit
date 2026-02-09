@@ -169,8 +169,11 @@
     }
 
     async function loadTeachers(){
-      const q1 = query(collection(db,"teachers"), where("active","==",true), orderBy("name"));
-      const res = await getDocs(q1);
+      const q1 = query(
+  collection(db,"teachers"),
+  where("active","==",true)
+);
+
 
       visitorTeacher.innerHTML = "";
       visitedTeacher.innerHTML = "";
@@ -192,8 +195,11 @@
     }
 
     async function loadClasses(){
-      const q1 = query(collection(db,"classes"), where("active","==",true), orderBy("name"));
-      const res = await getDocs(q1);
+      query(
+  collection(db,"classes"),
+  where("active","==",true)
+)
+
 
       className.innerHTML = "";
       addDefaultOption(className, "اختر الفصل");
@@ -207,8 +213,11 @@
     }
 
     async function loadSubjects(){
-      const q1 = query(collection(db,"subjects"), where("active","==",true), orderBy("name"));
-      const res = await getDocs(q1);
+      query(
+  collection(db,"subjects"),
+  where("active","==",true)
+)
+
 
       subject.innerHTML = "";
       addDefaultOption(subject, "اختر المادة");
