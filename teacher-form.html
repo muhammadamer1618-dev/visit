@@ -60,7 +60,7 @@ textarea{min-height:90px}
         <input type="date" id="visitDate">
       </div>
 
-      <!-- المعلم الزائر (مخفي ومحدد تلقائيًا) -->
+      <!-- المعلم الزائر مخفي -->
       <input type="hidden" id="visitorTeacher">
 
       <div>
@@ -123,7 +123,7 @@ const app = initializeApp({
 });
 const db = getFirestore(app);
 
-/* read tid */
+/* get tid */
 const params = new URLSearchParams(window.location.search);
 const teacherId = params.get("tid");
 if(!teacherId){
@@ -131,7 +131,6 @@ if(!teacherId){
 }
 
 /* elements */
-const visitorTeacher = document.getElementById("visitorTeacher");
 const visitedTeacher = document.getElementById("visitedTeacher");
 const className = document.getElementById("className");
 const subject = document.getElementById("subject");
@@ -164,29 +163,31 @@ function fillPeriods(){
     });
 }
 
-async function loadSelect(col,sel,placeholder){
-  addDefault(sel,placeholder);
+/* تحميل المعلمين مع استبعاد الزائر */
+async function loadVisitedTeachersExcludeVisitor(){
+  addDefault(visitedTeacher,"اختر المعلم المُزار");
+
   const res = await getDocs(
-    query(collection(db,col), where("active","==",true))
+    query(collection(db,"teachers"), where("active","==",true))
   );
+
   res.forEach(d=>{
+    if(d.id === teacherId) return; // ⛔ استبعاد نفسه
     const o=document.createElement("option");
     o.value=d.id;
     o.textContent=d.data().name || "";
-    sel.appendChild(o);
+    visitedTeacher.appendChild(o);
   });
 }
 
-/* load visitor teacher from tid */
+/* تحميل اسم المعلم الزائر */
 async function loadVisitorTeacher(){
   const snap = await getDoc(doc(db,"teachers",teacherId));
   if(!snap.exists()){
     location.href="index.html";
     return;
   }
-  const data = snap.data();
-  visitorTeacher.value = teacherId;
-  pageTitle.textContent = "صفحة المعلم – " + (data.name || "");
+  pageTitle.textContent = "صفحة المعلم – " + (snap.data().name || "");
 }
 
 /* subject other */
@@ -251,9 +252,24 @@ document.getElementById("startBtn").onclick = async ()=>{
 /* init */
 fillPeriods();
 loadVisitorTeacher();
-loadSelect("teachers",visitedTeacher,"اختر المعلم المُزار");
-loadSelect("classes",className,"اختر الفصل");
-loadSelect("subjects",subject,"اختر المادة");
+loadVisitedTeachersExcludeVisitor();
+
+addDefault(className,"اختر الفصل");
+addDefault(subject,"اختر المادة");
+
+const cls = await getDocs(query(collection(db,"classes"), where("active","==",true)));
+cls.forEach(d=>{
+  const o=document.createElement("option");
+  o.value=d.id;o.textContent=d.data().name;
+  className.appendChild(o);
+});
+
+const subs = await getDocs(query(collection(db,"subjects"), where("active","==",true)));
+subs.forEach(d=>{
+  const o=document.createElement("option");
+  o.value=d.id;o.textContent=d.data().name;
+  subject.appendChild(o);
+});
 
 const otherOpt=document.createElement("option");
 otherOpt.value="__other__";
