@@ -76,6 +76,13 @@ input{
   background:#ef6c00;
 }
 
+.btn-delete{
+  background:#d32f2f;
+}
+.btn-delete:hover{
+  background:#b71c1c;
+}
+
 /* الجدول */
 table{
   width:100%;
@@ -156,6 +163,7 @@ th{
           <th>الفصل</th>
           <th>الحصة</th>
           <th>طباعة</th>
+          <th>مسح</th>
         </tr>
       </thead>
       <tbody id="rows"></tbody>
@@ -167,7 +175,7 @@ th{
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import { getFirestore, collection, getDocs, query, where }
+import { getFirestore, collection, getDocs, query, where, doc, deleteDoc }
 from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
 const app = initializeApp({
@@ -219,11 +227,27 @@ async function loadVisits(){
           طباعة
         </button>
       </td>
+      <td>
+        <button class="btn btn-delete"
+          onclick="deleteVisit('${docSnap.id}')">
+          مسح
+        </button>
+      </td>
     `;
     tbody.appendChild(tr);
   });
 }
 window.loadVisits = loadVisits;
+
+/* DELETE VISIT */
+async function deleteVisit(id){
+  const ok = confirm("هل أنت متأكد من مسح هذه الزيارة نهائيًا؟");
+  if(!ok) return;
+
+  await deleteDoc(doc(db,"visits",id));
+  loadVisits();
+}
+window.deleteVisit = deleteVisit;
 </script>
 
 </body>
