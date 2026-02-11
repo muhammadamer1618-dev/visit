@@ -100,10 +100,19 @@ textarea{min-height:90px}
 
     </div>
 
-    <div class="btnRow">
-      <button class="btn btn-muted" onclick="location.href='index.html'">رجوع</button>
-      <button class="btn btn-primary" id="startBtn">بدء نموذج الزيارة</button>
-    </div>
+  <div class="btnRow">
+  <button class="btn btn-muted" onclick="location.href='index.html'">رجوع</button>
+
+  <button class="btn btn-primary" id="startBtn">
+    بدء نموذج الزيارة
+  </button>
+
+  <button class="btn btn-muted"
+    onclick="window.location.href='teacher-visits.html?tid=' + new URLSearchParams(window.location.search).get('tid')">
+    📋 زياراتي السابقة
+  </button>
+</div>
+
 
     <div class="msg" id="msg"></div>
   </div>
